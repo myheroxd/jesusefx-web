@@ -11,6 +11,8 @@ Pasos para publicar cambios en `jesusefx.es`. La documentación del montaje est�
 | `cv.pdf` | CV descargable |
 | `404.html` | Página de error |
 | `worker.js` | Worker del formulario y del listado |
+| `favicon.svg`, `favicon-*.png`, `apple-touch-icon.png` | Iconos del sitio |
+| `site.webmanifest` | Manifest para móvil |
 
 ## 1. Subir el sitio
 
