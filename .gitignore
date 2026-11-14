@@ -1,0 +1,16 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Secretos y notas locales
+.env
+.env.*
+*.local.md
+
+# Node / Wrangler
+node_modules/
+.wrangler/
