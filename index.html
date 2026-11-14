@@ -103,8 +103,7 @@
           <textarea id="mensaje" name="mensaje" maxlength="2000" required></textarea>
         </div>
 
-        <!-- Sustituye TU_SITE_KEY por la clave pública de Turnstile -->
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
+        <div id="turnstile-wrap" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
 
         <div class="privacidad">
           <p class="aviso-privacidad" id="aviso-privacidad">
@@ -130,11 +129,30 @@
     </footer>
   </div>
 
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script>
     const form = document.getElementById('form-contacto');
     const estado = document.getElementById('estado');
     const boton = document.getElementById('enviar');
+
+    let tsCargando = false;
+    function cargarTurnstile() {
+      if (tsCargando || window.turnstile) return;
+      tsCargando = true;
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async = true;
+      s.onload = () => {
+        const c = document.getElementById('turnstile-wrap');
+        if (c && !c.dataset.rendered) {
+          turnstile.render(c, { sitekey: c.dataset.sitekey, theme: c.dataset.theme || 'dark' });
+          c.dataset.rendered = '1';
+        }
+      };
+      document.head.appendChild(s);
+    }
+    form.addEventListener('focusin', cargarTurnstile, { once: true });
+    form.addEventListener('click', cargarTurnstile, { once: true });
+    form.addEventListener('submit', cargarTurnstile, { once: true });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -159,7 +177,8 @@
         return;
       }
       if (!token) {
-        estado.textContent = 'Espera a que se complete la verificación.';
+        cargarTurnstile();
+        estado.textContent = 'Espera un momento: se está cargando la verificación.';
         estado.classList.add('err');
         return;
       }
