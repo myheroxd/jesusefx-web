@@ -1,8 +1,8 @@
-# Mi dominio y Cloudflare
+# Mi dominio `jesusefx.es` y Cloudflare
 
 Documento de trabajo donde recojo cómo monté el dominio, qué servicios de Cloudflare uso, por qué tomé cada decisión y qué hice cuando algo falló. Está escrito en primera persona y pensado para publicarlo en el repositorio del sitio.
 
-> **Convenciones:** `<dominio>` sustituye al dominio real en la documentación. El código (`index.html`, `worker.js`) conserva el dominio real porque debe funcionar.
+> **Convenciones:** el dominio es el real; los usuarios y las rutas internas aparecen como marcadores (`<usuario>`).
 
 > **Nota:** las claves privadas (secreto de Turnstile, token del túnel, correo de Access) no aparecen aquí. Viven en Cloudflare y en mi equipo.
 
@@ -24,7 +24,7 @@ Todo con el plan gratuito.
 
 ```mermaid
 graph LR
-  U[Visitante] --> CF[Cloudflare<br/><dominio>]
+  U[Visitante] --> CF[Cloudflare<br/>jesusefx.es]
   CF -->|"/"| W[Worker web<br/>HTML + CV + 404]
   CF -->|"/contact"| C[Worker contacto]
   C -->|"siteverify"| T[Turnstile]
@@ -36,12 +36,12 @@ graph LR
 
 | Nombre | Qué hace |
 |---|---|
-| `<dominio>` | Portada estática servida por el Worker `web` |
-| `www.<dominio>` | Redirección 301 a la raíz |
-| `<dominio>/*` | Página 404 propia |
-| `api.<dominio>/contact` | Formulario (Turnstile + KV) |
-| `api.<dominio>/mensajes` | Lista de mensajes, protegida con Access |
-| `ssh.<dominio>` | Túnel SSH al PC de casa |
+| `jesusefx.es` | Portada estática servida por el Worker `web` |
+| `www.jesusefx.es` | Redirección 301 a la raíz |
+| `jesusefx.es/*` | Página 404 propia |
+| `api.jesusefx.es/contact` | Formulario (Turnstile + KV) |
+| `api.jesusefx.es/mensajes` | Lista de mensajes, protegida con Access |
+| `ssh.jesusefx.es` | Túnel SSH al PC de casa |
 
 ---
 
@@ -51,7 +51,7 @@ graph LR
 - **Quitar el parking de DonDominio.** Tenía un `A` al parking, un `CNAME *` y un `CNAME www`. El comodín hacía que cualquier subdominio, incluido `ssh.`, resolviera al parking. Lo eliminé para que los errores se vean en vez de quedar tapados.
 - **Túnel en lugar de abrir puertos.** El túnel es una conexión saliente; no hay puertos abiertos en el router ni en el Beryl. Funciona en redes que bloquean otros protocolos porque usa el 443.
 - **Access delante del túnel.** Aunque el SSH ya exige clave, Access añade una capa de autenticación por correo con PIN y caducidad de 24 h.
-- **El formulario va a un subdominio (`api.`).** Las rutas de Worker sobre un dominio de Pages no son fiables; un Worker con dominio propio en `api.<dominio>` funciona sin ambigüedades. El CORS se resuelve en el propio Worker.
+- **El formulario va a un subdominio (`api.`).** Las rutas de Worker sobre un dominio de Pages no son fiables; un Worker con dominio propio en `api.jesusefx.es` funciona sin ambigüedades. El CORS se resuelve en el propio Worker.
 - **El comodín `*` no se usa.** Fue el origen del último incidente (sección 6).
 - **Una KV por servicio.** `mensajes` guarda los envíos del formulario; es de la cuenta y se vincula solo al Worker que la usa.
 
@@ -63,7 +63,7 @@ graph LR
 
 1. Añadí el sitio en Cloudflare y copié los dos nameservers asignados.
 2. En DonDominio, **DNS → Editar servidores DNS**, sustituí los suyos por los de Cloudflare.
-3. Comprobé la delegación con `dig NS <dominio>` y con `dig +trace`.
+3. Comprobé la delegación con `dig NS jesusefx.es` y con `dig +trace`.
 4. Tardó en propagarse; el registro `.es` seguía devolviendo los antiguos hasta que el registrador envió el cambio.
 
 ### 4.2 Limpieza del parking
@@ -75,7 +75,7 @@ Borré en Cloudflare el `A` del apex, el `CNAME *` y el `CNAME www`. Dejé el `T
 ```sh
 cloudflared tunnel login
 cloudflared tunnel create ssh-casa
-cloudflared tunnel route dns ssh-casa ssh.<dominio>
+cloudflared tunnel route dns ssh-casa ssh.jesusefx.es
 ```
 
 `~/.cloudflared/config.yml`:
@@ -85,7 +85,7 @@ tunnel: <UUID>
 credentials-file: /home/<usuario>/.cloudflared/<UUID>.json
 
 ingress:
-  - hostname: ssh.<dominio>
+  - hostname: ssh.jesusefx.es
     service: ssh://localhost:22
   - service: http_status:404
 ```
@@ -94,7 +94,7 @@ Servicio del sistema `cloudflared-ssh.service` con `Restart=on-failure`.
 
 ### 4.4 Access para SSH
 
-Aplicación autoalojada sobre `ssh.<dominio>`, política **Allow** por correo, login con **PIN de un solo uso**, sesión de 24 h.
+Aplicación autoalojada sobre `ssh.jesusefx.es`, política **Allow** por correo, login con **PIN de un solo uso**, sesión de 24 h.
 
 ### 4.5 Web estática
 
@@ -109,17 +109,17 @@ La IP ficticia funciona porque la redirección se ejecuta en el borde y la petic
 
 ### 4.7 Formulario: Turnstile, KV y Worker
 
-1. **Turnstile**: widget gestionado para `<dominio>` y `api.<dominio>`. La *Site Key* va en el HTML; la *Secret Key* es un secreto del Worker.
+1. **Turnstile**: widget gestionado para `jesusefx.es` y `api.jesusefx.es`. La *Site Key* va en el HTML; la *Secret Key* es un secreto del Worker.
 2. **KV**: namespace `mensajes`.
-3. **Worker `contacto`** con dominio personalizado `api.<dominio>`:
+3. **Worker `contacto`** con dominio personalizado `api.jesusefx.es`:
    - `POST /contact`: valida los campos, verifica Turnstile contra `siteverify`, guarda en KV.
    - `GET /mensajes`: renderiza la lista.
-   - CORS limitado a `https://<dominio>`.
+   - CORS limitado a `https://jesusefx.es`.
 4. Bindings: `MENSAJES` (KV) y `TURNSTILE_SECRET` (secreto).
 
 ### 4.8 Access para los mensajes
 
-Aplicación autoalojada `api.<dominio>` **ruta `/mensajes`**, política Allow por correo. La ruta es imprescindible: si se protege todo `api.`, el formulario deja de funcionar para los visitantes.
+Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow por correo. La ruta es imprescindible: si se protege todo `api.`, el formulario deja de funcionar para los visitantes.
 
 ---
 
@@ -129,11 +129,11 @@ Aplicación autoalojada `api.<dominio>` **ruta `/mensajes`**, política Allow po
 
 | Tipo | Nombre | Destino | Proxy |
 |---|---|---|---|
-| Worker | `<dominio>` | Worker `web` | Proxied |
+| Worker | `jesusefx.es` | Worker `web` | Proxied |
 | A | `www` | `192.0.2.1` | Proxied |
 | Tunnel | `ssh` | Túnel `ssh-casa` | Proxied |
 | Worker | `api` | Worker `contacto` | Proxied |
-| TXT | `<dominio>` | `v=spf1 include:spf.dondominio.com` | DNS only |
+| TXT | `jesusefx.es` | `v=spf1 include:spf.dondominio.com` | DNS only |
 
 ### Workers y datos
 
@@ -143,14 +143,14 @@ Aplicación autoalojada `api.<dominio>` **ruta `/mensajes`**, política Allow po
 | Worker | `contacto` | API del formulario |
 | KV | `mensajes` | Vinculada como `MENSAJES` |
 | Secreto | `TURNSTILE_SECRET` | Solo en `contacto` |
-| Turnstile | widget `<dominio>` | Modo gestionado |
+| Turnstile | widget `jesusefx.es` | Modo gestionado |
 
 ### Access
 
 | Aplicación | Destino | Política |
 |---|---|---|
-| `ssh` | `ssh.<dominio>` | Allow por correo, PIN, 24 h |
-| `Mensajes` | `api.<dominio>/mensajes` | Allow por correo, 24 h |
+| `ssh` | `ssh.jesusefx.es` | Allow por correo, PIN, 24 h |
+| `Mensajes` | `api.jesusefx.es/mensajes` | Allow por correo, 24 h |
 
 ---
 
@@ -160,9 +160,9 @@ Aplicación autoalojada `api.<dominio>` **ruta `/mensajes`**, política Allow po
 
 **Síntoma:** `ssh casa-cf` dejó de funcionar con `websocket: bad handshake`. Access respondía 302 sin token, pero con token el borde devolvía **404**.
 
-**Causa:** al desplegar la web, el flujo de Cloudflare creó un dominio personalizado `*.<dominio>` asociado al Worker `web`. Ese comodín interceptaba `ssh.<dominio>` antes de llegar al túnel.
+**Causa:** al desplegar la web, el flujo de Cloudflare creó un dominio personalizado `*.jesusefx.es` asociado al Worker `web`. Ese comodín interceptaba `ssh.jesusefx.es` antes de llegar al túnel.
 
-**Solución:** quitar el dominio personalizado `*` (no se puede borrar desde DNS: hay que hacerlo en **Worker → Dominios** o en **Rutas de Workers**) y volver a añadir `<dominio>` como dominio personalizado. Tras ello, el WebSocket devolvió **101**.
+**Solución:** quitar el dominio personalizado `*` (no se puede borrar desde DNS: hay que hacerlo en **Worker → Dominios** o en **Rutas de Workers**) y volver a añadir `jesusefx.es` como dominio personalizado. Tras ello, el WebSocket devolvió **101**.
 
 ### 6.2 Access no protegía `/mensajes`
 
@@ -170,11 +170,11 @@ Aplicación autoalojada `api.<dominio>` **ruta `/mensajes`**, política Allow po
 
 **Causa:** la aplicación se creó sin destino registrado (la vista previa mostraba «0 destinos»).
 
-**Solución:** añadir el nombre de host público `api.<dominio>` con ruta `/mensajes` y comprobar en la vista previa que aparecía **1 destino** antes de guardar.
+**Solución:** añadir el nombre de host público `api.jesusefx.es` con ruta `/mensajes` y comprobar en la vista previa que aparecía **1 destino** antes de guardar.
 
 ### 6.3 Caché negativa de DNS
 
-**Síntoma:** tras quitar y volver a añadir el dominio raíz, `dig <dominio>` devolvía vacío y `curl` no resolvía, aunque `dig @1.1.1.1` sí respondía.
+**Síntoma:** tras quitar y volver a añadir el dominio raíz, `dig jesusefx.es` devolvía vacío y `curl` no resolvía, aunque `dig @1.1.1.1` sí respondía.
 
 **Causa:** el resolver local (systemd-resolved y el Beryl) había cacheado el NXDOMAIN.
 
@@ -184,7 +184,7 @@ Aplicación autoalojada `api.<dominio>` **ruta `/mensajes`**, política Allow po
 
 - `curl` no puede probar el WebSocket sobre HTTP/2; hay que forzar `--http1.1`.
 - Al reiniciar AdGuard en el Beryl aparecen muchos avisos de `fw3`/`ETHERNET_TTL`: son ruido del firmware GL.iNet, no un fallo del cortafuegos.
-- `api.<dominio>/contact` en el navegador devuelve `{"error":"metodo"}`: es correcto, solo acepta POST.
+- `api.jesusefx.es/contact` en el navegador devuelve `{"error":"metodo"}`: es correcto, solo acepta POST.
 
 ---
 
@@ -201,10 +201,10 @@ La Site Key está en el HTML; la Secret Key, en el secreto del Worker. Si roto e
 ### Comprobaciones periódicas
 
 ```sh
-curl -sI https://<dominio> | head -1
-curl -sI https://www.<dominio> | grep -i location
-curl -s https://api.<dominio>/ -w ' [%{http_code}]\n'
-dig ssh.<dominio> +short
+curl -sI https://jesusefx.es | head -1
+curl -sI https://www.jesusefx.es | grep -i location
+curl -s https://api.jesusefx.es/ -w ' [%{http_code}]\n'
+dig ssh.jesusefx.es +short
 systemctl is-active cloudflared-ssh
 ```
 
@@ -253,14 +253,14 @@ Todo dentro del plan gratuito: Pages/Workers (100 000 peticiones/día), KV (1 GB
 
 ```sh
 # DNS
-dig <dominio> +short
-dig NS <dominio> +short
-dig +trace NS <dominio>
+dig jesusefx.es +short
+dig NS jesusefx.es +short
+dig +trace NS jesusefx.es
 
 # Túnel
 cloudflared tunnel list
 cloudflared tunnel info ssh-casa
-cloudflared tunnel route dns ssh-casa ssh.<dominio>
+cloudflared tunnel route dns ssh-casa ssh.jesusefx.es
 
 # Servicio del túnel
 sudo systemctl restart cloudflared-ssh
@@ -268,7 +268,7 @@ journalctl -u cloudflared-ssh -n 50 --no-pager
 
 # SSH por Cloudflare
 ssh casa-cf
-ssh -o ProxyCommand="cloudflared access ssh --hostname %h" <usuario>@ssh.<dominio>
+ssh -o ProxyCommand="cloudflared access ssh --hostname %h" <usuario>@ssh.jesusefx.es
 
 # Caché de DNS
 sudo resolvectl flush-caches

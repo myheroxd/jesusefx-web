@@ -1,6 +1,6 @@
 # Despliegue
 
-Pasos para publicar cambios en el sitio. La documentación del montaje está en [README.md](README.md).
+Pasos para publicar cambios en `jesusefx.es`. La documentación del montaje está en [README.md](README.md).
 
 ## Archivos
 
@@ -20,15 +20,15 @@ Pasos para publicar cambios en el sitio. La documentación del montaje está en 
 Comprueba:
 
 ```sh
-curl -sI https://<dominio> | head -1
-curl -s https://<dominio>/no-existe | grep -o '<title>[^<]*'
+curl -sI https://jesusefx.es | head -1
+curl -s https://jesusefx.es/no-existe | grep -o '<title>[^<]*'
 ```
 
 ## 2. Cambiar la Site Key de Turnstile
 
 Si rotas el widget:
 
-1. **Turnstile → <dominio> → Settings**: copia la nueva **Site Key** y la **Secret Key**.
+1. **Turnstile → jesusefx.es → Settings**: copia la nueva **Site Key** y la **Secret Key**.
 2. En `index.html`, sustituye el valor de `data-sitekey`.
 3. Vuelve a desplegar (paso 1).
 4. En el Worker `contacto` → **Settings → Variables and Secrets**, actualiza el secreto `TURNSTILE_SECRET`.
@@ -42,7 +42,7 @@ Si rotas el widget:
 Comprueba:
 
 ```sh
-curl -s https://api.<dominio>/ -w ' [%{http_code}]\n'
+curl -s https://api.jesusefx.es/ -w ' [%{http_code}]\n'
 # {"error":"no_encontrado"} [404]
 ```
 
@@ -58,26 +58,26 @@ Solo si hay que recrearlos:
 
 ## 5. Dominio y rutas
 
-El Worker `web` tiene como dominio personalizado `<dominio>`. El Worker `contacto`, `api.<dominio>`.
+El Worker `web` tiene como dominio personalizado `jesusefx.es`. El Worker `contacto`, `api.jesusefx.es`.
 
-**No añadas `*.<dominio>`**: el comodín intercepta `ssh.<dominio>` y rompe el túnel (ver README, sección 6.1).
+**No añadas `*.jesusefx.es`**: el comodín intercepta `ssh.jesusefx.es` y rompe el túnel (ver README, sección 6.1).
 
 ## 6. Access
 
 | Aplicación | Destino | Política |
 |---|---|---|
-| `ssh` | `ssh.<dominio>` | Allow por correo, PIN, 24 h |
-| `Mensajes` | `api.<dominio>/mensajes` | Allow por correo, 24 h |
+| `ssh` | `ssh.jesusefx.es` | Allow por correo, PIN, 24 h |
+| `Mensajes` | `api.jesusefx.es/mensajes` | Allow por correo, 24 h |
 
 La ruta `/mensajes` es obligatoria. Si se protege todo `api.`, el formulario deja de funcionar para los visitantes.
 
 ## 7. Comprobación completa
 
 ```sh
-dig <dominio> +short
-curl -sI https://<dominio> | head -1
-curl -sI https://www.<dominio> | grep -i location
-curl -s https://api.<dominio>/ -w ' [%{http_code}]\n'
+dig jesusefx.es +short
+curl -sI https://jesusefx.es | head -1
+curl -sI https://www.jesusefx.es | grep -i location
+curl -s https://api.jesusefx.es/ -w ' [%{http_code}]\n'
 ssh casa-cf
 ```
 
