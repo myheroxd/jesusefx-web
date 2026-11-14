@@ -9,6 +9,8 @@ Pasos para publicar cambios en `jesusefx.es`. La documentación del montaje est�
 | `index.html` | Portada, enlaces y formulario |
 | `cv.html` | CV público, sin datos de contacto |
 | `cv.pdf` | CV descargable |
+| `privacidad.html` | Política de privacidad |
+| `aviso-legal.html` | Aviso legal |
 | `404.html` | Página de error |
 | `worker.js` | Worker del formulario y del listado |
 | `favicon.svg`, `favicon-*.png`, `apple-touch-icon.png` | Iconos del sitio |
@@ -18,7 +20,7 @@ Pasos para publicar cambios en `jesusefx.es`. La documentación del montaje est�
 
 1. `dash.cloudflare.com` → **Workers & Pages** → Worker **`web`**.
 2. **Create deployment** (o **Nueva implementación**) → **Upload assets**.
-3. Arrastra la carpeta del proyecto. Debe contener `index.html`, `404.html`, `cv.html` y `cv.pdf` en la raíz.
+3. Arrastra la carpeta del proyecto. Debe contener `index.html`, `404.html`, `cv.html`, `cv.pdf`, `privacidad.html` y `aviso-legal.html` en la raíz.
 4. **Deploy**.
 
 Comprueba:

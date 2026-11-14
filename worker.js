@@ -51,10 +51,12 @@ async function contact(request, env) {
   const email = String(data.email || '').trim().slice(0, 200);
   const mensaje = String(data.mensaje || '').trim().slice(0, MAX_MENSAJE);
   const token = String(data['cf-turnstile-response'] || '');
+  const acepta = data.acepta === true;
 
   if (!nombre || !mensaje) return json({ error: 'campos' }, 400, CORS);
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: 'email' }, 400, CORS);
   if (!token) return json({ error: 'captcha' }, 400, CORS);
+  if (!acepta) return json({ error: 'consentimiento' }, 400, CORS);
 
   const form = new FormData();
   form.append('secret', env.TURNSTILE_SECRET);
@@ -74,7 +76,8 @@ async function contact(request, env) {
     nombre, email, mensaje,
     fecha: new Date().toISOString(),
     pais: request.cf?.country || '',
-  }));
+    consentimiento: true,
+  }), { expirationTtl: 31536000 }); // 12 meses
 
   return json({ ok: true }, 200, CORS);
 }

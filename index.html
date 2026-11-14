@@ -58,9 +58,21 @@
   .err { color: #f87171; }
   footer { margin-top: 48px; font-size: .78rem; color: #5f7893; text-align: center; }
   footer a { color: #7f9dbb; text-decoration: none; }
+  footer { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .skip { position: absolute; left: -9999px; top: 0; background: #2f6fb0; color: #fff;
+          padding: 8px 14px; border-radius: 0 0 8px 0; z-index: 10; text-decoration: none; }
+  .skip:focus { left: 0; }
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2px solid #7fc4ff; outline-offset: 2px;
+  }
+  .privacidad { margin: 2px 0 0; }
+  .aviso-privacidad { font-size: .82rem; color: #8fa6bd; margin: 0 0 8px; }
+  .check { display: flex; gap: 9px; align-items: flex-start; font-size: .85rem; color: #b9cadc; }
+  .check input { width: auto; margin-top: 3px; flex: none; }
 </style>
 </head>
 <body>
+  <a class="skip" href="#contacto">Ir al formulario</a>
   <div class="wrap">
     <nav>
       <a href="/cv.html">CV</a>
@@ -94,12 +106,27 @@
         <!-- Sustituye TU_SITE_KEY por la clave pública de Turnstile -->
         <div class="cf-turnstile" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
 
+        <div class="privacidad">
+          <p class="aviso-privacidad" id="aviso-privacidad">
+            Los datos que envíes (nombre, correo y mensaje) se usan solo para responderte y se conservan
+            12 meses. Más información en la <a href="/privacidad.html">política de privacidad</a>.
+          </p>
+          <label class="check">
+            <input type="checkbox" id="acepto" name="acepto" required aria-describedby="aviso-privacidad">
+            <span>He leído y acepto la <a href="/privacidad.html">política de privacidad</a>.</span>
+          </label>
+        </div>
+
         <button type="submit" id="enviar">Enviar</button>
         <p class="msg" id="estado" role="status" aria-live="polite"></p>
       </form>
     </section>
 
-    <footer>© 2026 · jesusefx.es</footer>
+    <footer>
+      <span>© 2026 · jesusefx.es</span>
+      <a href="/privacidad.html">Privacidad</a>
+      <a href="/aviso-legal.html">Aviso legal</a>
+    </footer>
   </div>
 
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -117,10 +144,17 @@
       const email = form.email.value.trim();
       const mensaje = form.mensaje.value.trim();
       const token = form.querySelector('[name="cf-turnstile-response"]')?.value || '';
+      const acepta = form.acepto.checked;
 
       if (!nombre || !email || !mensaje) {
         estado.textContent = 'Rellena todos los campos.';
         estado.classList.add('err');
+        return;
+      }
+      if (!acepta) {
+        estado.textContent = 'Debes aceptar la política de privacidad.';
+        estado.classList.add('err');
+        form.acepto.focus();
         return;
       }
       if (!token) {
@@ -135,7 +169,7 @@
         const r = await fetch('https://api.jesusefx.es/contact', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ nombre, email, mensaje, 'cf-turnstile-response': token })
+          body: JSON.stringify({ nombre, email, mensaje, acepta, 'cf-turnstile-response': token })
         });
         const data = await r.json().catch(() => ({}));
         if (r.ok && data.ok) {

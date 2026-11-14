@@ -283,6 +283,8 @@ sudo resolvectl flush-caches
 | `index.html` | Portada del sitio |
 | `cv.html` | CV público (sin teléfono ni correo) |
 | `cv.pdf` | CV descargable, misma versión |
+| `privacidad.html` | Política de privacidad (RGPD/LOPDGDD) |
+| `aviso-legal.html` | Aviso legal (LSSI-CE) |
 | `404.html` | Página de error |
 | `worker.js` | Worker del formulario y del listado |
 | `DESPLIEGUE.md` | Pasos para publicar cambios |
