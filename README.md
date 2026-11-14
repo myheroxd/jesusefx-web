@@ -98,7 +98,7 @@ Aplicación autoalojada sobre `ssh.jesusefx.es`, política **Allow** por correo,
 
 ### 4.5 Web estática
 
-Subí una carpeta con `index.html` y `404.html` mediante **Workers & Pages → Create → Upload and deploy**. Cloudflare crea un Worker de activos estáticos y le asocia el dominio raíz.
+Subí una carpeta con `index.html`, `404.html`, `cv.html` y `cv.pdf` mediante **Workers & Pages → Create → Upload and deploy**. Cloudflare crea un Worker de activos estáticos y le asocia el dominio raíz.
 
 ### 4.6 Redirección `www`
 
@@ -281,6 +281,8 @@ sudo resolvectl flush-caches
 | Archivo | Qué es |
 |---|---|
 | `index.html` | Portada del sitio |
+| `cv.html` | CV público (sin teléfono ni correo) |
+| `cv.pdf` | CV descargable, misma versión |
 | `404.html` | Página de error |
 | `worker.js` | Worker del formulario y del listado |
 | `DESPLIEGUE.md` | Pasos para publicar cambios |
