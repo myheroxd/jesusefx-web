@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>jesusefx.es — En construcción</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; padding: 40px 24px 64px;
+    display: flex; flex-direction: column; align-items: center;
+    background: radial-gradient(1200px 600px at 20% 0%, #16324f 0%, #0b1220 55%, #070b12 100%);
+    color: #e6edf6;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { width: 100%; max-width: 620px; }
+  nav { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 40px; }
+  nav a {
+    font-size: .85rem; color: #a9bdd3; text-decoration: none; padding: 7px 12px;
+    border: 1px solid #1d3350; border-radius: 999px; transition: .15s;
+  }
+  nav a:hover { color: #e6edf6; border-color: #2f5a86; background: #12233a; }
+  .badge {
+    display: inline-block; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: #8fb4d9; border: 1px solid #24466b; border-radius: 999px; padding: 6px 12px; margin-bottom: 22px;
+  }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.7rem); margin: 0 0 14px; font-weight: 650; letter-spacing: -.02em; }
+  h2 { font-size: 1.1rem; margin: 0 0 14px; font-weight: 600; color: #cfe0f2; }
+  p { color: #a9bdd3; line-height: 1.65; margin: 0 0 12px; }
+  .dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #4ade80; margin-right: 8px; box-shadow: 0 0 0 4px rgba(74,222,128,.15);
+  }
+  hr { border: 0; border-top: 1px solid #17293f; margin: 44px 0; }
+  form { display: grid; gap: 12px; }
+  label { font-size: .8rem; color: #8fb4d9; letter-spacing: .04em; }
+  input, textarea {
+    width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid #1d3350;
+    background: #0d1727; color: #e6edf6; font: inherit; font-size: .95rem;
+  }
+  input:focus, textarea:focus { outline: none; border-color: #3f6f9f; box-shadow: 0 0 0 3px rgba(63,111,159,.18); }
+  textarea { min-height: 120px; resize: vertical; }
+  button {
+    justify-self: start; margin-top: 4px; padding: 11px 22px; border-radius: 8px; border: 0;
+    background: #2f6fb0; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: #3a82cb; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .msg { font-size: .9rem; min-height: 1.3em; }
+  .ok { color: #4ade80; }
+  .err { color: #f87171; }
+  footer { margin-top: 48px; font-size: .78rem; color: #5f7893; text-align: center; }
+  footer a { color: #7f9dbb; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a href="/cv.pdf" download>CV</a>
+      <a href="https://github.com/myheroxd" target="_blank" rel="noopener">GitHub</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+
+    <span class="badge">jesusefx.es</span>
+    <h1>Estamos construyendo algo</h1>
+    <p><span class="dot"></span>El sitio está en preparación.</p>
+    <p>Volveré pronto con novedades. Mientras tanto, puedes escribirme por el formulario de abajo.</p>
+
+    <hr>
+
+    <section id="contacto">
+      <h2>Contacto</h2>
+      <form id="form-contacto" novalidate>
+        <div>
+          <label for="nombre">Nombre</label>
+          <input id="nombre" name="nombre" type="text" maxlength="100" required autocomplete="name">
+        </div>
+        <div>
+          <label for="email">Correo</label>
+          <input id="email" name="email" type="email" maxlength="200" required autocomplete="email">
+        </div>
+        <div>
+          <label for="mensaje">Mensaje</label>
+          <textarea id="mensaje" name="mensaje" maxlength="2000" required></textarea>
+        </div>
+
+        <!-- Sustituye TU_SITE_KEY por la clave pública de Turnstile -->
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
+
+        <button type="submit" id="enviar">Enviar</button>
+        <p class="msg" id="estado" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <footer>© 2026 · jesusefx.es</footer>
+  </div>
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    const form = document.getElementById('form-contacto');
+    const estado = document.getElementById('estado');
+    const boton = document.getElementById('enviar');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      estado.textContent = '';
+      estado.className = 'msg';
+
+      const nombre = form.nombre.value.trim();
+      const email = form.email.value.trim();
+      const mensaje = form.mensaje.value.trim();
+      const token = form.querySelector('[name="cf-turnstile-response"]')?.value || '';
+
+      if (!nombre || !email || !mensaje) {
+        estado.textContent = 'Rellena todos los campos.';
+        estado.classList.add('err');
+        return;
+      }
+      if (!token) {
+        estado.textContent = 'Espera a que se complete la verificación.';
+        estado.classList.add('err');
+        return;
+      }
+
+      boton.disabled = true;
+      estado.textContent = 'Enviando…';
+      try {
+        const r = await fetch('https://api.jesusefx.es/contact', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ nombre, email, mensaje, 'cf-turnstile-response': token })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.ok) {
+          form.reset();
+          if (window.turnstile) turnstile.reset();
+          estado.textContent = 'Mensaje enviado. Gracias.';
+          estado.classList.add('ok');
+        } else {
+          estado.textContent = 'No se pudo enviar. Inténtalo más tarde.';
+          estado.classList.add('err');
+        }
+      } catch {
+        estado.textContent = 'Error de conexión.';
+        estado.classList.add('err');
+      } finally {
+        boton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
