@@ -2,6 +2,8 @@
 
 Documento de trabajo donde recojo cómo monté el dominio, qué servicios de Cloudflare uso, por qué tomé cada decisión y qué hice cuando algo falló. Está escrito en primera persona y pensado para publicarlo en el repositorio del sitio.
 
+> **Convenciones:** `<dominio>` sustituye al dominio real en la documentación. El código (`index.html`, `worker.js`) conserva el dominio real porque debe funcionar.
+
 > **Nota:** las claves privadas (secreto de Turnstile, token del túnel, correo de Access) no aparecen aquí. Viven en Cloudflare y en mi equipo.
 
 ---
