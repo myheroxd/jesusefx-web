@@ -98,7 +98,13 @@ Aplicación autoalojada sobre `ssh.jesusefx.es`, política **Allow** por correo,
 
 ### 4.5 Web estática
 
-Subí una carpeta con `index.html`, `404.html`, `cv.html` y `cv.pdf` mediante **Workers & Pages → Create → Upload and deploy**. Cloudflare crea un Worker de activos estáticos y le asocia el dominio raíz.
+Subí una carpeta con **12 archivos** (`index.html`, `404.html`, `cv.html`, `cv.pdf`, `privacidad.html`, `aviso-legal.html`, los cuatro iconos y `site.webmanifest`) mediante **Workers & Pages → Create → Upload and deploy**. Cloudflare crea un Worker de activos estáticos y le asocia el dominio raíz.
+
+El Worker sirve los archivos con estas reglas:
+
+- `auto-trailing-slash`: `/cv.html` responde 307 a `/cv`.
+- `404-page`: una ruta inexistente devuelve `404.html` con código 404.
+- Sin preview URLs, para que cada versión no genere una URL pública extra.
 
 ### 4.6 Redirección `www`
 
@@ -116,10 +122,26 @@ La IP ficticia funciona porque la redirección se ejecuta en el borde y la petic
    - `GET /mensajes`: renderiza la lista.
    - CORS limitado a `https://jesusefx.es`.
 4. Bindings: `MENSAJES` (KV) y `TURNSTILE_SECRET` (secreto).
+5. El script de Turnstile **no se carga al abrir la página**: se inyecta la primera vez que el visitante toca el formulario. Quien solo lee la portada no descarga nada de terceros.
+6. Cada mensaje se guarda con `consentimiento: true` y una caducidad de **12 meses** en KV (`expirationTtl`). El Worker rechaza los envíos sin la casilla marcada.
 
 ### 4.8 Access para los mensajes
 
 Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow por correo. La ruta es imprescindible: si se protege todo `api.`, el formulario deja de funcionar para los visitantes.
+
+### 4.9 Correo con Email Routing
+
+`contacto@jesusefx.es` se crea con **Email Routing**: recibe en Cloudflare y reenvía a mi buzón personal. No hay buzón propio con IMAP.
+
+- Dirección de destino verificada en Cloudflare.
+- Registros que añade Email Routing: tres **MX** (`route1/2/3.mx.cloudflare.net`), **SPF** propio (`include:_spf.mx.cloudflare.net`) y **DKIM** (`cf2024-1._domainkey`).
+- **DMARC** en `_dmarc`: `v=DMARC1; p=none; rua=mailto:contacto@jesusefx.es`.
+- El SPF antiguo de DonDominio se eliminó: dos registros SPF invalidan la autenticación.
+
+### 4.10 HTTPS obligatorio y HSTS
+
+- **Always Use HTTPS** activo: `http://` responde 301 a `https://`.
+- **HSTS** con `max-age=15552000` (6 meses), `includeSubDomains` y `nosniff`.
 
 ---
 
@@ -133,7 +155,10 @@ Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow 
 | A | `www` | `192.0.2.1` | Proxied |
 | Tunnel | `ssh` | Túnel `ssh-casa` | Proxied |
 | Worker | `api` | Worker `contacto` | Proxied |
-| TXT | `jesusefx.es` | `v=spf1 include:spf.dondominio.com` | DNS only |
+| MX | `jesusefx.es` | `route1/2/3.mx.cloudflare.net` | DNS only |
+| TXT | `jesusefx.es` | `v=spf1 include:_spf.mx.cloudflare.net ~all` | DNS only |
+| TXT | `cf2024-1._domainkey` | DKIM de Email Routing | DNS only |
+| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:contacto@jesusefx.es` | DNS only |
 
 ### Workers y datos
 
@@ -144,6 +169,7 @@ Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow 
 | KV | `mensajes` | Vinculada como `MENSAJES` |
 | Secreto | `TURNSTILE_SECRET` | Solo en `contacto` |
 | Turnstile | widget `jesusefx.es` | Modo gestionado |
+| Email Routing | `contacto@jesusefx.es` | Reenvío a mi buzón personal |
 
 ### Access
 
@@ -192,7 +218,17 @@ Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow 
 
 ### Actualizar la web
 
-Edito `index.html` o `404.html` y hago **Create deployment → Upload assets** en el Worker `web`. El dominio no cambia.
+Hay dos caminos.
+
+**Automático** (el que uso): `./deploy-web.sh` desde el equipo de casa.
+
+1. Refresca el token de la CLI `cf`.
+2. Copia los 12 archivos del repositorio a `deploy-web/`.
+3. Despliega con Wrangler usando el token OAuth de `cf` (sin `wrangler login`).
+4. Comprueba las URLs publicadas.
+5. Hace `git commit` y `git push` con la deploy key del repositorio.
+
+**Manual**: **Create deployment → Upload assets** en el Worker `web`, arrastrando `deploy-web/`. El dominio no cambia.
 
 ### Cambiar el aspecto del formulario
 
@@ -231,6 +267,10 @@ Si el túnel cae, el servicio lo reinicia solo. Si el hostname deja de responder
 - Access protege `ssh.` y `/mensajes`; `/contact` queda público a propósito, con Turnstile y validación en servidor.
 - La clave SSH del aula va en un USB y se copia a `/tmp`, nunca a una carpeta permanente.
 - No hay puertos abiertos en el router.
+- **HTTPS obligatorio y HSTS** de 6 meses con `includeSubDomains`: el navegador no vuelve a intentar HTTP.
+- El formulario exige **consentimiento** y guarda los mensajes con **caducidad de 12 meses**; sin la casilla, el Worker rechaza el envío.
+- El script de **Turnstile** solo se carga cuando se interactúa con el formulario.
+- Despliegue con **deploy keys** independientes por repositorio (`jesusefx-web` y `MSX-Hosting`), sin passphrase y revocables desde GitHub.
 
 ---
 
@@ -242,10 +282,11 @@ Todo dentro del plan gratuito: Pages/Workers (100 000 peticiones/día), KV (1 GB
 
 ## 10. Pendientes
 
-- Enviar el primer mensaje real y comprobar el listado.
-- Valorar un formulario con más campos o un aviso por correo cuando llegue un mensaje.
-- Revisar la página cuando quiera publicar contenido de verdad (blog, proyectos, CV actualizado).
-- Mover el sitio a un repositorio con despliegue automático por Git si empiezo a cambiar el HTML a menudo.
+- Endurecer DMARC en 2-4 semanas: de `p=none` a `p=quarantine` y después `p=reject`.
+- Subir el `max-age` de HSTS de 6 a 12 meses cuando el sitio lleve tiempo estable.
+- Valorar un aviso por correo cuando llegue un mensaje nuevo.
+- Publicar contenido real (blog, proyectos) y actualizar el CV cuando toque.
+- Opcional: enviar correo «como» `contacto@` (hoy solo recibe; para responder uso mi buzón personal).
 
 ---
 
@@ -287,8 +328,18 @@ sudo resolvectl flush-caches
 | `aviso-legal.html` | Aviso legal (LSSI-CE) |
 | `404.html` | Página de error |
 | `worker.js` | Worker del formulario y del listado |
+| `favicon.svg`, `favicon-32/192/512.png`, `apple-touch-icon.png` | Iconos del sitio |
+| `site.webmanifest` | Manifest para móvil |
 | `DESPLIEGUE.md` | Pasos para publicar cambios |
 | `LICENSE` | Licencia MIT |
+
+Fuera del repositorio, en el equipo de casa:
+
+| Ruta | Qué es |
+|---|---|
+| `deploy-web.sh` | Script de despliegue completo (Cloudflare + GitHub) |
+| `deploy-web/` | Carpeta con los 12 archivos listos para subir |
+| `~/.ssh/deploy_web` | Deploy key de este repositorio |
 
 ---
 
