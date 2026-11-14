@@ -220,7 +220,12 @@ Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow 
 
 Hay dos caminos.
 
-**Automático** (el que uso): `./deploy-web.sh` desde el equipo de casa.
+**Automático** (el que uso): `./deploy-web.sh` desde el equipo de casa. Acepta un mensaje
+opcional para el commit:
+
+```sh
+./deploy-web.sh "Actualizar el CV público"
+```
 
 1. Refresca el token de la CLI `cf`.
 2. Copia los 12 archivos del repositorio a `deploy-web/`.
