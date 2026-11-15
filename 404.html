@@ -4,43 +4,69 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Página no encontrada — jesusefx.es</title>
+<title>Página no encontrada · jesusefx.es</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#14304f">
+<meta name="theme-color" content="#0b0f14">
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
   body {
-    margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px;
-    background: radial-gradient(1200px 600px at 20% 0%, #16324f 0%, #0b1220 55%, #070b12 100%);
-    color: #e6edf6;
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: #0b0f14;
+    color: #e8eef6;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
   }
-  .card { max-width: 520px; text-align: center; }
-  .code { font-size: clamp(3.5rem, 14vw, 6rem); font-weight: 700; letter-spacing: -.04em;
-          color: #2f5a86; line-height: 1; margin-bottom: 8px; }
-  h1 { font-size: 1.5rem; margin: 0 0 12px; font-weight: 600; }
-  p { color: #a9bdd3; line-height: 1.6; margin: 0 0 26px; }
-  a {
-    display: inline-block; padding: 10px 20px; border-radius: 8px;
-    background: #2f6fb0; color: #fff; text-decoration: none; font-weight: 600;
+  .tarjeta { max-width: 460px; text-align: center; }
+  .codigo {
+    margin: 0 0 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: clamp(3rem, 12vw, 4.5rem);
+    font-weight: 500;
+    line-height: 1;
+    color: #3f6790;
   }
-  a:hover { background: #3a82cb; }
+  h1 { margin: 0 0 12px; font-size: 1.4rem; font-weight: 600; }
+  p { margin: 0 0 28px; color: #9db0c4; }
+  .acciones { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+  .boton {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: #2f6fb0;
+    color: #fff;
+    font-size: .95rem;
+    text-decoration: none;
+  }
+  .boton:hover { background: #3a82cb; }
+  .enlace { color: #9db0c4; font-size: .95rem; text-decoration: none; align-self: center; }
+  .enlace:hover { color: #e8eef6; }
+  .pie { display: flex; gap: 16px; justify-content: center; margin: 40px 0 0;
+         font-size: .8rem; }
+  .pie a { color: #74879c; text-decoration: none; }
+  .pie a:hover { color: #9db0c4; }
+  a:focus-visible { outline: 2px solid #6fb1f0; outline-offset: 2px; }
 </style>
 </head>
 <body>
-  <main class="card">
-    <div class="code">404</div>
+  <main class="tarjeta">
+    <p class="codigo">404</p>
     <h1>Esta página no existe</h1>
-    <p>Puede que el enlace esté mal escrito o que la página se haya movido.</p>
-    <a href="/">Volver al inicio</a>
-    <p style="margin-top:26px;font-size:.8rem;color:#6b8199">
-      <a href="/privacidad" style="color:#8fb4d9;text-decoration:none">Privacidad</a>
-      &nbsp;·&nbsp;
-      <a href="/aviso-legal" style="color:#8fb4d9;text-decoration:none">Aviso legal</a>
+    <p>El enlace puede estar mal escrito o la página se ha movido.</p>
+    <div class="acciones">
+      <a class="boton" href="/">Volver al inicio</a>
+      <a class="enlace" href="/#contacto">Escribirme</a>
+    </div>
+    <p class="pie">
+      <a href="/privacidad">Privacidad</a>
+      <a href="/aviso-legal">Aviso legal</a>
     </p>
   </main>
 </body>

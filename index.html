@@ -3,124 +3,265 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>jesusefx.es — En construcción</title>
-<meta name="description" content="Sitio personal de Jesús-Ángel Escartín García: perfil profesional, currículum y formulario de contacto.">
+<title>Jesús-Ángel Escartín García · Sistemas y redes</title>
+<meta name="description" content="Sitio personal de Jesús-Ángel Escartín García, técnico en Sistemas Microinformáticos y Redes. Currículum y formulario de contacto.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#14304f">
+<meta name="theme-color" content="#0b0f14">
 <style>
-  :root { color-scheme: dark; }
+  :root {
+    color-scheme: dark;
+    --fondo: #0b0f14;
+    --superficie: #11161d;
+    --linea: #1e2a38;
+    --texto: #e8eef6;
+    --texto-2: #9db0c4;
+    --texto-3: #74879c;
+    --acento: #2f6fb0;
+    --acento-hover: #3a82cb;
+    --enlace: #6fb1f0;
+  }
   * { box-sizing: border-box; }
   body {
-    margin: 0; min-height: 100vh; padding: 40px 24px 64px;
-    display: flex; flex-direction: column; align-items: center;
-    background: radial-gradient(1200px 600px at 20% 0%, #16324f 0%, #0b1220 55%, #070b12 100%);
-    color: #e6edf6;
+    margin: 0;
+    padding: 40px 24px 64px;
+    background: var(--fondo);
+    color: var(--texto);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
   }
-  .wrap { width: 100%; max-width: 620px; }
-  nav { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 40px; }
+  .wrap { width: 100%; max-width: 680px; margin: 0 auto; }
+  .cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+  .marca {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem;
+    color: var(--texto-2);
+    text-decoration: none;
+    letter-spacing: .02em;
+  }
+  .marca:hover { color: var(--texto); }
+  nav { display: flex; gap: 20px; flex-wrap: wrap; }
   nav a {
-    font-size: .85rem; color: #a9bdd3; text-decoration: none; padding: 7px 12px;
-    border: 1px solid #1d3350; border-radius: 999px; transition: .15s;
+    font-size: .9rem;
+    color: var(--texto-2);
+    text-decoration: none;
   }
-  nav a:hover { color: #e6edf6; border-color: #2f5a86; background: #12233a; }
-  .badge {
-    display: inline-block; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
-    color: #8fb4d9; border: 1px solid #24466b; border-radius: 999px; padding: 6px 12px; margin-bottom: 22px;
+  nav a:hover { color: var(--texto); }
+  .kicker {
+    margin: 0 0 8px;
+    font-size: .9rem;
+    color: var(--texto-3);
   }
-  h1 { font-size: clamp(1.9rem, 5vw, 2.7rem); margin: 0 0 14px; font-weight: 650; letter-spacing: -.02em; }
-  h2 { font-size: 1.1rem; margin: 0 0 14px; font-weight: 600; color: #cfe0f2; }
-  p { color: #a9bdd3; line-height: 1.65; margin: 0 0 12px; }
-  .dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: #4ade80; margin-right: 8px; box-shadow: 0 0 0 4px rgba(74,222,128,.15);
+  h1 {
+    margin: 0 0 16px;
+    font-size: clamp(2rem, 5vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1.15;
   }
-  hr { border: 0; border-top: 1px solid #17293f; margin: 44px 0; }
-  form { display: grid; gap: 12px; }
-  label { font-size: .8rem; color: #8fb4d9; letter-spacing: .04em; }
+  .entradilla {
+    margin: 0 0 24px;
+    max-width: 56ch;
+    font-size: 1.05rem;
+    color: var(--texto-2);
+  }
+  .acciones { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin: 0 0 40px; }
+  .boton {
+    display: inline-block;
+    padding: 11px 20px;
+    border-radius: 8px;
+    background: var(--acento);
+    color: #fff;
+    font-size: .95rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .boton:hover { background: var(--acento-hover); }
+  .enlace { color: var(--enlace); font-size: .95rem; text-decoration: none; }
+  .enlace:hover { text-decoration: underline; }
+  .datos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px 24px;
+    margin: 0 0 8px;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--linea);
+  }
+  .datos div { margin: 0; }
+  .datos dt {
+    margin: 0 0 2px;
+    font-size: .78rem;
+    color: var(--texto-3);
+  }
+  .datos dd { margin: 0; font-size: .92rem; color: var(--texto-2); }
+  section { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--linea); }
+  h2 { margin: 0 0 8px; font-size: 1.15rem; font-weight: 600; }
+  .nota { margin: 0 0 24px; font-size: .95rem; color: var(--texto-2); }
+  form { display: grid; gap: 16px; }
+  .campo { display: grid; gap: 6px; }
+  label { font-size: .85rem; color: var(--texto-2); }
   input, textarea {
-    width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid #1d3350;
-    background: #0d1727; color: #e6edf6; font: inherit; font-size: .95rem;
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--linea);
+    border-radius: 8px;
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+    font-size: .95rem;
   }
-  input:focus, textarea:focus { outline: none; border-color: #3f6f9f; box-shadow: 0 0 0 3px rgba(63,111,159,.18); }
-  textarea { min-height: 120px; resize: vertical; }
+  input:hover, textarea:hover { border-color: #2b3d52; }
+  input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--enlace);
+    outline-offset: 1px;
+    border-color: var(--enlace);
+  }
+  textarea { min-height: 128px; resize: vertical; }
   button {
-    justify-self: start; margin-top: 4px; padding: 11px 22px; border-radius: 8px; border: 0;
-    background: #2f6fb0; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    justify-self: start;
+    margin-top: 4px;
+    padding: 11px 22px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--acento);
+    color: #fff;
+    font: inherit;
+    font-size: .95rem;
+    font-weight: 500;
+    cursor: pointer;
   }
-  button:hover { background: #3a82cb; }
+  button:hover { background: var(--acento-hover); }
   button:disabled { opacity: .55; cursor: not-allowed; }
-  .msg { font-size: .9rem; min-height: 1.3em; }
-  .ok { color: #4ade80; }
-  .err { color: #f87171; }
-  footer { margin-top: 48px; font-size: .78rem; color: #5f7893; text-align: center; }
-  footer a { color: #7f9dbb; text-decoration: none; }
-  footer { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-  .skip { position: absolute; left: -9999px; top: 0; background: #2f6fb0; color: #fff;
-          padding: 8px 14px; border-radius: 0 0 8px 0; z-index: 10; text-decoration: none; }
-  .skip:focus { left: 0; }
-  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
-    outline: 2px solid #7fc4ff; outline-offset: 2px;
+  .aviso-privacidad {
+    margin: 0 0 10px;
+    font-size: .82rem;
+    color: var(--texto-3);
   }
-  .privacidad { margin: 2px 0 0; }
-  .aviso-privacidad { font-size: .82rem; color: #8fa6bd; margin: 0 0 8px; }
-  .check { display: flex; gap: 9px; align-items: flex-start; font-size: .85rem; color: #b9cadc; }
-  .check input { width: auto; margin-top: 3px; flex: none; }
+  .aviso-privacidad a { color: var(--texto-2); }
+  .aceptacion { display: flex; gap: 10px; align-items: flex-start; font-size: .85rem; color: var(--texto-2); }
+  .aceptacion input { width: auto; margin-top: 4px; flex: none; }
+  .aceptacion a { color: var(--texto-2); }
+  .estado { min-height: 1.4em; margin: 0; font-size: .9rem; }
+  .estado.ok { color: #7ee0a1; }
+  .estado.err { color: #ff9a9a; }
+  footer {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 56px;
+    font-size: .8rem;
+    color: var(--texto-3);
+  }
+  footer a { color: var(--texto-3); text-decoration: none; }
+  footer a:hover { color: var(--texto-2); }
+  .saltar {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    padding: 8px 14px;
+    border-radius: 0 0 8px 0;
+    background: var(--acento);
+    color: #fff;
+    text-decoration: none;
+    z-index: 10;
+  }
+  .saltar:focus { left: 0; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--enlace);
+    outline-offset: 2px;
+  }
+  @media (max-width: 520px) {
+    body { padding: 24px 20px 48px; }
+    .cabecera { margin-bottom: 40px; }
+    nav { gap: 14px; }
+    .datos { grid-template-columns: 1fr; gap: 12px; }
+  }
 </style>
 </head>
 <body>
-  <a class="skip" href="#contacto">Ir al formulario</a>
+  <a class="saltar" href="#contacto">Ir al formulario</a>
   <div class="wrap">
-    <nav>
-      <a href="/cv">CV</a>
-      <a href="https://github.com/myheroxd" target="_blank" rel="noopener">GitHub</a>
-      <a href="#contacto">Contacto</a>
-    </nav>
+    <header class="cabecera">
+      <a class="marca" href="/">jesusefx.es</a>
+      <nav>
+        <a href="/cv">Currículum</a>
+        <a href="https://github.com/myheroxd" target="_blank" rel="noopener">GitHub</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+    </header>
 
     <main>
-    <span class="badge">jesusefx.es</span>
-    <h1>Estamos construyendo algo</h1>
-    <p><span class="dot"></span>El sitio está en preparación.</p>
-    <p>Volveré pronto con novedades. Mientras tanto, puedes escribirme por el formulario de abajo.</p>
+      <p class="kicker">Técnico en Sistemas Microinformáticos y Redes</p>
+      <h1>Jesús-Ángel Escartín García</h1>
+      <p class="entradilla">
+        Monto, diagnostico y reparo equipos. Configuro redes locales y hago soporte
+        a quien lo necesita. Busco mi primer puesto en sistemas, redes o atención al usuario.
+      </p>
+      <p class="acciones">
+        <a class="boton" href="/cv">Ver currículum</a>
+        <a class="enlace" href="#contacto">Escribirme</a>
+      </p>
 
-    <hr>
-
-    <section id="contacto">
-      <h2>Contacto</h2>
-      <form id="form-contacto" novalidate>
+      <dl class="datos">
         <div>
-          <label for="nombre">Nombre</label>
-          <input id="nombre" name="nombre" type="text" maxlength="100" required autocomplete="name">
-        </div>
-        <div>
-          <label for="email">Correo</label>
-          <input id="email" name="email" type="email" maxlength="200" required autocomplete="email">
+          <dt>Dónde</dt>
+          <dd>Zaragoza</dd>
         </div>
         <div>
-          <label for="mensaje">Mensaje</label>
-          <textarea id="mensaje" name="mensaje" maxlength="2000" required></textarea>
+          <dt>Disponibilidad</dt>
+          <dd>Jornada completa y turnos rotativos</dd>
         </div>
-
-        <div id="turnstile-wrap" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
-
-        <div class="privacidad">
-          <p class="aviso-privacidad" id="aviso-privacidad">
-            Los datos que envíes (nombre, correo y mensaje) se usan solo para responderte y se conservan
-            12 meses. Más información en la <a href="/privacidad">política de privacidad</a>.
-          </p>
-          <label class="check">
-            <input type="checkbox" id="acepto" name="acepto" required aria-describedby="aviso-privacidad">
-            <span>He leído y acepto la <a href="/privacidad">política de privacidad</a>.</span>
-          </label>
+        <div>
+          <dt>Idiomas</dt>
+          <dd>Español nativo · Inglés A2-B1</dd>
         </div>
+      </dl>
 
-        <button type="submit" id="enviar">Enviar</button>
-        <p class="msg" id="estado" role="status" aria-live="polite"></p>
-      </form>
-    </section>
+      <section id="contacto">
+        <h2>Contacto</h2>
+        <p class="nota">Escríbeme por aquí y te respondo al correo que indiques.</p>
+        <form id="form-contacto" novalidate>
+          <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" maxlength="100" required autocomplete="name">
+          </div>
+          <div class="campo">
+            <label for="email">Correo</label>
+            <input id="email" name="email" type="email" maxlength="200" required autocomplete="email">
+          </div>
+          <div class="campo">
+            <label for="mensaje">Mensaje</label>
+            <textarea id="mensaje" name="mensaje" maxlength="2000" required></textarea>
+          </div>
+
+          <div id="turnstile-wrap" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
+
+          <div>
+            <p class="aviso-privacidad" id="aviso-privacidad">
+              Los datos que envíes (nombre, correo y mensaje) se usan solo para responderte y se
+              conservan 12 meses. Más información en la
+              <a href="/privacidad">política de privacidad</a>.
+            </p>
+            <label class="aceptacion">
+              <input type="checkbox" id="acepto" name="acepto" required aria-describedby="aviso-privacidad">
+              <span>He leído y acepto la <a href="/privacidad">política de privacidad</a>.</span>
+            </label>
+          </div>
+
+          <button type="submit" id="enviar">Enviar</button>
+          <p class="estado" id="estado" role="status" aria-live="polite"></p>
+        </form>
+      </section>
     </main>
 
     <footer>
@@ -131,82 +272,113 @@
   </div>
 
   <script>
-    const form = document.getElementById('form-contacto');
+    const formulario = document.getElementById('form-contacto');
     const estado = document.getElementById('estado');
-    const boton = document.getElementById('enviar');
+    const botonEnviar = document.getElementById('enviar');
+    const contenedorWidget = document.getElementById('turnstile-wrap');
 
-    let tsCargando = false;
-    function cargarTurnstile() {
-      if (tsCargando || window.turnstile) return;
-      tsCargando = true;
-      const s = document.createElement('script');
-      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-      s.async = true;
-      s.onload = () => {
-        const c = document.getElementById('turnstile-wrap');
-        if (c && !c.dataset.rendered) {
-          turnstile.render(c, { sitekey: c.dataset.sitekey, theme: c.dataset.theme || 'dark' });
-          c.dataset.rendered = '1';
-        }
-      };
-      document.head.appendChild(s);
+    let cargandoWidget = false;
+
+    function mostrarEstado(texto, tipo) {
+      estado.textContent = texto;
+      estado.className = tipo ? 'estado ' + tipo : 'estado';
     }
-    form.addEventListener('focusin', cargarTurnstile, { once: true });
-    form.addEventListener('click', cargarTurnstile, { once: true });
-    form.addEventListener('submit', cargarTurnstile, { once: true });
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      estado.textContent = '';
-      estado.className = 'msg';
-
-      const nombre = form.nombre.value.trim();
-      const email = form.email.value.trim();
-      const mensaje = form.mensaje.value.trim();
-      const token = form.querySelector('[name="cf-turnstile-response"]')?.value || '';
-      const acepta = form.acepto.checked;
-
-      if (!nombre || !email || !mensaje) {
-        estado.textContent = 'Rellena todos los campos.';
-        estado.classList.add('err');
+    function cargarWidget() {
+      if (cargandoWidget || window.turnstile) {
         return;
       }
-      if (!acepta) {
-        estado.textContent = 'Debes aceptar la política de privacidad.';
-        estado.classList.add('err');
-        form.acepto.focus();
+      cargandoWidget = true;
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.onload = dibujarWidget;
+      document.head.appendChild(script);
+    }
+
+    function dibujarWidget() {
+      if (!contenedorWidget || contenedorWidget.dataset.rendered) {
         return;
       }
-      if (!token) {
-        cargarTurnstile();
-        estado.textContent = 'Espera un momento: se está cargando la verificación.';
-        estado.classList.add('err');
+      turnstile.render(contenedorWidget, {
+        sitekey: contenedorWidget.dataset.sitekey,
+        theme: 'dark'
+      });
+      contenedorWidget.dataset.rendered = '1';
+    }
+
+    function leerDatos() {
+      return {
+        nombre: formulario.elements.nombre.value.trim(),
+        email: formulario.elements.email.value.trim(),
+        mensaje: formulario.elements.mensaje.value.trim(),
+        acepta: formulario.elements.acepto.checked,
+        token: formulario.querySelector('[name="cf-turnstile-response"]')?.value || ''
+      };
+    }
+
+    function buscarError(datos) {
+      if (!datos.nombre || !datos.email || !datos.mensaje) {
+        return 'Rellena todos los campos.';
+      }
+      if (!datos.acepta) {
+        formulario.elements.acepto.focus();
+        return 'Debes aceptar la política de privacidad.';
+      }
+      if (!datos.token) {
+        cargarWidget();
+        return 'Espera un momento: se está cargando la verificación.';
+      }
+      return '';
+    }
+
+    async function enviar(datos) {
+      const respuesta = await fetch('https://api.jesusefx.es/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          nombre: datos.nombre,
+          email: datos.email,
+          mensaje: datos.mensaje,
+          acepta: datos.acepta,
+          'cf-turnstile-response': datos.token
+        })
+      });
+      const cuerpo = await respuesta.json().catch(() => ({}));
+      return respuesta.ok && cuerpo.ok;
+    }
+
+    formulario.addEventListener('focusin', cargarWidget, { once: true });
+    formulario.addEventListener('click', cargarWidget, { once: true });
+
+    formulario.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      mostrarEstado('', '');
+
+      const datos = leerDatos();
+      const error = buscarError(datos);
+      if (error) {
+        mostrarEstado(error, 'err');
         return;
       }
 
-      boton.disabled = true;
-      estado.textContent = 'Enviando…';
+      botonEnviar.disabled = true;
+      mostrarEstado('Enviando…', '');
       try {
-        const r = await fetch('https://api.jesusefx.es/contact', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ nombre, email, mensaje, acepta, 'cf-turnstile-response': token })
-        });
-        const data = await r.json().catch(() => ({}));
-        if (r.ok && data.ok) {
-          form.reset();
-          if (window.turnstile) turnstile.reset();
-          estado.textContent = 'Mensaje enviado. Gracias.';
-          estado.classList.add('ok');
-        } else {
-          estado.textContent = 'No se pudo enviar. Inténtalo más tarde.';
-          estado.classList.add('err');
+        const correcto = await enviar(datos);
+        if (!correcto) {
+          mostrarEstado('No se pudo enviar. Inténtalo más tarde.', 'err');
+          return;
         }
+        formulario.reset();
+        if (window.turnstile) {
+          turnstile.reset();
+        }
+        mostrarEstado('Mensaje enviado. Gracias.', 'ok');
       } catch {
-        estado.textContent = 'Error de conexión.';
-        estado.classList.add('err');
+        mostrarEstado('Error de conexión.', 'err');
       } finally {
-        boton.disabled = false;
+        botonEnviar.disabled = false;
       }
     });
   </script>
