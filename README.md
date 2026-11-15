@@ -227,11 +227,14 @@ opcional para el commit:
 ./deploy-web.sh "Actualizar el CV público"
 ```
 
-1. Refresca el token de la CLI `cf`.
+1. Lee el token de despliegue de `~/.config/cloudflare/deploy-token`.
 2. Copia los 12 archivos del repositorio a `deploy-web/`.
-3. Despliega con Wrangler usando el token OAuth de `cf` (sin `wrangler login`).
-4. Comprueba las URLs publicadas.
-5. Hace `git commit` y `git push` con la deploy key del repositorio.
+3. Despliega con Wrangler usando ese token (sin `wrangler login`).
+4. Purga la caché del dominio.
+5. Comprueba las URLs publicadas.
+6. Hace `git commit` y `git push` con la deploy key del repositorio.
+
+El token es un API token de Cloudflare con dos permisos: **Workers Scripts: Edit** y **Cache Purge** sobre `jesusefx.es`. No toca DNS, KV ni Access.
 
 **Manual**: **Create deployment → Upload assets** en el Worker `web`, arrastrando `deploy-web/`. El dominio no cambia.
 

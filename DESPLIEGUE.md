@@ -104,11 +104,12 @@ cd ~/Documentos/deepseek-harness/default-workspace
 
 El script:
 
-1. Refresca el token de `cf` (CLI de Cloudflare).
+1. Lee el token de `~/.config/cloudflare/deploy-token`.
 2. Copia los archivos del repositorio a `deploy-web/`.
 3. Despliega el Worker `web` con Wrangler.
-4. Comprueba las URLs publicadas.
-5. Hace `git commit` y `git push` si hay cambios.
+4. Purga la caché del dominio.
+5. Comprueba las URLs publicadas.
+6. Hace `git commit` y `git push` si hay cambios.
 
 Usa el token OAuth de `cf`; no hace falta `wrangler login`. Si el agente SSH no
 tiene la clave cargada, el despliegue se hace igual y el push queda pendiente.
