@@ -20,7 +20,7 @@ Pasos para publicar cambios en `jesusefx.es`. La documentación del montaje est�
 
 1. `dash.cloudflare.com` → **Workers & Pages** → Worker **`web`**.
 2. **Create deployment** (o **Nueva implementación**) → **Upload assets**.
-3. Arrastra la carpeta del proyecto. Debe contener `index.html`, `404.html`, `cv.html`, `cv.pdf`, `privacidad.html` y `aviso-legal.html` en la raíz.
+3. Arrastra la carpeta del proyecto. Debe contener `index.html`, `404.html`, `cv.html`, `cv.pdf`, `privacidad.html`, `aviso-legal.html` y la carpeta `.well-known/`.
 4. **Deploy**.
 
 Comprueba:

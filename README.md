@@ -110,6 +110,8 @@ El Worker sirve los archivos con estas reglas:
 
 - Registro `A www → 192.0.2.1` (proxied). Es una IP reservada para documentación: no hay servidor detrás.
 - Regla **Single Redirect**: `https://www.*` → `https://${1}`, código 301.
+- Ruta de Worker `www.jesusefx.es/*` → `web`, para que `www` pueda servir archivos propios.
+- La redirección **exceptúa** `/.well-known/`, que se sirve desde el Worker con `content-type: text/plain`. Así funciona la verificación de dominio de Discord sin dejar de redirigir el resto de `www`.
 
 La IP ficticia funciona porque la redirección se ejecuta en el borde y la petición nunca llega al origen.
 
@@ -338,6 +340,7 @@ sudo resolvectl flush-caches
 | `worker.js` | Worker del formulario y del listado |
 | `favicon.svg`, `favicon-32/192/512.png`, `apple-touch-icon.png` | Iconos del sitio |
 | `site.webmanifest` | Manifest para móvil |
+| `.well-known/discord` | Verificación del dominio en Discord |
 | `DESPLIEGUE.md` | Pasos para publicar cambios |
 | `LICENSE` | Licencia MIT |
 
