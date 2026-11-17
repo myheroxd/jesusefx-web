@@ -4,6 +4,17 @@ const MAX_EMAIL = 200;
 const MAX_MENSAJE = 2000;
 const MAX_LISTA = 200;
 const TTL_MENSAJE = 31536000;
+const MAX_POR_DIA = 3;
+const MAX_POR_MINUTO = 1;
+const TTL_DIA = 86400;
+const TTL_MINUTO = 60;
+const TTL_DUPLICADO = 3600;
+const MAX_ENLACES = 2;
+const SEGUNDOS_MINIMOS = 3;
+const PALABRAS_BLOQUEADAS = [
+  'casino', 'crypto', 'bitcoin', 'viagra', 'prestamo', 'préstamo',
+  'backlink', 'escort', 'porn', 'xxx', 'lottery', 'lotería', 'apuestas',
+];
 
 const CORS = {
   'Access-Control-Allow-Origin': ORIGEN,
@@ -58,11 +69,33 @@ async function procesarContacto(request, env) {
     mensaje: String(cuerpo.mensaje || '').trim().slice(0, MAX_MENSAJE),
     token: String(cuerpo['cf-turnstile-response'] || ''),
     acepta: cuerpo.acepta === true,
+    empresa: String(cuerpo.empresa || '').trim(),
+    inicio: Number(cuerpo.inicio || 0),
   };
+
+  const ip = request.headers.get('CF-Connecting-IP') || 'sin-ip';
+
+  if (datos.empresa) {
+    return respuestaJson({ error: 'spam' }, 400, CORS);
+  }
+
+  if (!datos.inicio || Date.now() - datos.inicio < SEGUNDOS_MINIMOS * 1000) {
+    return respuestaJson({ error: 'rapido' }, 400, CORS);
+  }
 
   const error = validar(datos);
   if (error) {
     return respuestaJson({ error }, 400, CORS);
+  }
+
+  const spam = detectarSpam(datos.mensaje);
+  if (spam) {
+    return respuestaJson({ error: spam }, 400, CORS);
+  }
+
+  const frecuencia = await comprobarFrecuencia(env.MENSAJES, ip);
+  if (frecuencia) {
+    return respuestaJson({ error: frecuencia }, 429, CORS);
   }
 
   const captchaCorrecto = await verificarCaptcha(
@@ -74,7 +107,16 @@ async function procesarContacto(request, env) {
     return respuestaJson({ error: 'captcha' }, 403, CORS);
   }
 
+  const repetido = await esDuplicado(env.MENSAJES, ip, datos.mensaje);
+  if (repetido) {
+    return respuestaJson({ error: 'duplicado' }, 409, CORS);
+  }
+
   await guardarMensaje(env.MENSAJES, datos, request.cf?.country || '');
+  await Promise.all([
+    anotarEnvio(env.MENSAJES, ip),
+    marcarDuplicado(env.MENSAJES, ip, datos.mensaje),
+  ]);
 
   return respuestaJson({ ok: true }, 200, CORS);
 }
@@ -93,6 +135,72 @@ function validar(datos) {
     return 'consentimiento';
   }
   return '';
+}
+
+function detectarSpam(mensaje) {
+  const enlaces = (mensaje.match(/https?:\/\//gi) || []).length;
+  if (enlaces > MAX_ENLACES) {
+    return 'enlaces';
+  }
+
+  const texto = mensaje.toLowerCase();
+  if (PALABRAS_BLOQUEADAS.some((palabra) => texto.includes(palabra))) {
+    return 'spam';
+  }
+
+  return '';
+}
+
+function clavesDeFrecuencia(ip) {
+  const ahora = new Date().toISOString();
+  return {
+    minuto: `rl:${ip}:m:${ahora.slice(0, 16)}`,
+    dia: `rl:${ip}:d:${ahora.slice(0, 10)}`,
+  };
+}
+
+async function comprobarFrecuencia(almacen, ip) {
+  const claves = clavesDeFrecuencia(ip);
+  const [porMinuto, porDia] = await Promise.all([
+    almacen.get(claves.minuto),
+    almacen.get(claves.dia),
+  ]);
+
+  if (Number(porMinuto || 0) >= MAX_POR_MINUTO) {
+    return 'frecuencia';
+  }
+  if (Number(porDia || 0) >= MAX_POR_DIA) {
+    return 'frecuencia';
+  }
+
+  return '';
+}
+
+async function anotarEnvio(almacen, ip) {
+  const claves = clavesDeFrecuencia(ip);
+  const [porMinuto, porDia] = await Promise.all([
+    almacen.get(claves.minuto),
+    almacen.get(claves.dia),
+  ]);
+
+  await Promise.all([
+    almacen.put(claves.minuto, String(Number(porMinuto || 0) + 1), { expirationTtl: TTL_MINUTO }),
+    almacen.put(claves.dia, String(Number(porDia || 0) + 1), { expirationTtl: TTL_DIA }),
+  ]);
+}
+
+async function huella(ip, mensaje) {
+  const datos = new TextEncoder().encode(`${ip}|${mensaje.toLowerCase()}`);
+  const resumen = await crypto.subtle.digest('SHA-256', datos);
+  return [...new Uint8Array(resumen)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+
+async function esDuplicado(almacen, ip, mensaje) {
+  return Boolean(await almacen.get(`dup:${await huella(ip, mensaje)}`));
+}
+
+async function marcarDuplicado(almacen, ip, mensaje) {
+  await almacen.put(`dup:${await huella(ip, mensaje)}`, '1', { expirationTtl: TTL_DUPLICADO });
 }
 
 async function verificarCaptcha(secreto, token, ip) {

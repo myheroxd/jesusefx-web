@@ -163,6 +163,13 @@
   .aceptacion { display: flex; gap: 10px; align-items: flex-start; font-size: .85rem; color: var(--texto-2); }
   .aceptacion input { width: auto; margin-top: 4px; flex: none; }
   .aceptacion a { color: var(--texto-2); }
+  .trampa {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
   .estado { min-height: 1.4em; margin: 0; font-size: .9rem; }
   .estado.ok { color: #7ee0a1; }
   .estado.err { color: #ff9a9a; }
@@ -258,6 +265,12 @@
             <textarea id="mensaje" name="mensaje" maxlength="2000" required></textarea>
           </div>
 
+          <div class="trampa" aria-hidden="true">
+            <label for="empresa">Empresa</label>
+            <input id="empresa" name="empresa" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <input type="hidden" id="inicio" name="inicio" value="">
+
           <div id="turnstile-wrap" data-sitekey="0x4AAAAAAGAMN-S6nkzIcXFP" data-theme="dark"></div>
 
           <div>
@@ -290,6 +303,8 @@
     const estado = document.getElementById('estado');
     const botonEnviar = document.getElementById('enviar');
     const contenedorWidget = document.getElementById('turnstile-wrap');
+
+    formulario.elements.inicio.value = String(Date.now());
 
     let cargandoWidget = false;
 
@@ -327,6 +342,8 @@
         email: formulario.elements.email.value.trim(),
         mensaje: formulario.elements.mensaje.value.trim(),
         acepta: formulario.elements.acepto.checked,
+        empresa: formulario.elements.empresa.value,
+        inicio: Number(formulario.elements.inicio.value || 0),
         token: formulario.querySelector('[name="cf-turnstile-response"]')?.value || ''
       };
     }
@@ -355,11 +372,31 @@
           email: datos.email,
           mensaje: datos.mensaje,
           acepta: datos.acepta,
+          empresa: datos.empresa,
+          inicio: datos.inicio,
           'cf-turnstile-response': datos.token
         })
       });
       const cuerpo = await respuesta.json().catch(() => ({}));
-      return respuesta.ok && cuerpo.ok;
+      if (respuesta.ok && cuerpo.ok) {
+        return { ok: true, error: '' };
+      }
+      return { ok: false, error: cuerpo.error || '' };
+    }
+
+    function mensajeError(codigo) {
+      const mensajes = {
+        frecuencia: 'Has enviado varios mensajes seguidos. Espera un minuto.',
+        duplicado: 'Ese mensaje ya se ha enviado.',
+        rapido: 'Espera un momento y vuelve a intentarlo.',
+        enlaces: 'El mensaje tiene demasiados enlaces.',
+        spam: 'El mensaje no parece válido.',
+        captcha: 'La verificación ha fallado. Recarga la página.',
+        campos: 'Rellena todos los campos.',
+        email: 'Revisa el correo.',
+        consentimiento: 'Debes aceptar la política de privacidad.'
+      };
+      return mensajes[codigo] || 'No se pudo enviar. Inténtalo más tarde.';
     }
 
     formulario.addEventListener('focusin', cargarWidget, { once: true });
@@ -379,9 +416,9 @@
       botonEnviar.disabled = true;
       mostrarEstado('Enviando…', '');
       try {
-        const correcto = await enviar(datos);
-        if (!correcto) {
-          mostrarEstado('No se pudo enviar. Inténtalo más tarde.', 'err');
+        const resultado = await enviar(datos);
+        if (!resultado.ok) {
+          mostrarEstado(mensajeError(resultado.error), 'err');
           return;
         }
         formulario.reset();

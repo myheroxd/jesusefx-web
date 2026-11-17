@@ -62,8 +62,9 @@
     <li><strong>Datos que facilitas:</strong> nombre, dirección de correo electrónico y el contenido del
     mensaje. Son los tres campos del formulario; el resto de campos no existen.</li>
     <li><strong>Datos técnicos asociados al envío:</strong> fecha y hora, y el país de origen que Cloudflare
-    añade a la petición. No se recoge la dirección IP en la base de datos, aunque Cloudflare la procesa para
-    el servicio y la verificación antispam.</li>
+    añade a la petición. La dirección IP completa no se guarda: para limitar envíos abusivos se almacena un
+    hash de la IP asociado al intento, que caduca en 24 horas. Cloudflare procesa la IP para el servicio y la
+    verificación antispam.</li>
     <li><strong>No se recogen</strong> datos de navegación, analítica, publicidad ni perfiles de usuario.</li>
   </ul>
 
