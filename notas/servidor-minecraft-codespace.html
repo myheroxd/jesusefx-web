@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Un servidor de Minecraft en un Codespace, con límite de una hora</title>
+<meta name="description" content="Cómo monté un servidor de Minecraft en un Codespace con playit.gg, y el script que cuenta el tiempo de juego y avisa por el chat antes de apagar.">
+<link rel="canonical" href="https://jesusefx.es/notas/servidor-minecraft-codespace">
+<meta name="author" content="Jesús-Ángel Escartín García">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="jesusefx.es">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="https://jesusefx.es/notas/servidor-minecraft-codespace">
+<meta property="og:title" content="Notas — jesusefx.es">
+<meta property="og:description" content="Artículos sobre sistemas, redes y el homelab de Jesús-Ángel Escartín García.">
+<meta property="og:image" content="https://jesusefx.es/favicon-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<meta name="theme-color" content="#0b0f14">
+<style>
+  :root {
+    color-scheme: dark;
+    --fondo: #0b0f14;
+    --superficie: #11161d;
+    --linea: #1e2a38;
+    --texto: #e8eef6;
+    --texto-2: #9db0c4;
+    --texto-3: #74879c;
+    --enlace: #6fb1f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 24px 64px;
+    background: var(--fondo); color: var(--texto);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { width: 100%; max-width: 700px; margin: 0 auto; }
+  .cabecera { display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
+  .marca { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem; color: var(--texto-2); text-decoration: none; letter-spacing: .02em; }
+  nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  nav a { font-size: .9rem; color: var(--texto-2); text-decoration: none; }
+  nav a:hover, nav a[aria-current] { color: var(--texto); }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.2; margin: 0 0 12px; letter-spacing: -.01em; }
+  h2 { font-size: 1.15rem; margin: 32px 0 10px; }
+  p { margin: 0 0 16px; }
+  a { color: var(--enlace); }
+  .meta { font-size: .82rem; color: var(--texto-3); margin-bottom: 32px; }
+  .entradilla { color: var(--texto-2); font-size: 1.05rem; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .88em; background: var(--superficie); border: 1px solid var(--linea);
+    border-radius: 4px; padding: 2px 5px; }
+  pre { background: var(--superficie); border: 1px solid var(--linea); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 20px; }
+  pre code { background: none; border: 0; padding: 0; font-size: .86rem; line-height: 1.5; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--linea);
+    display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--texto-3); }
+  footer a { color: var(--texto-3); }
+  .lista { display: grid; gap: 18px; margin-top: 28px; }
+  .entrada { display: block; padding: 18px 20px; border: 1px solid var(--linea);
+    border-radius: 8px; background: var(--superficie); text-decoration: none; color: var(--texto); }
+  .entrada:hover { border-color: #2b3d52; }
+  .entrada h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--enlace); }
+  .entrada p { margin: 0; color: var(--texto-2); font-size: .93rem; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="cabecera">
+      <a class="marca" href="/">jesusefx.es</a>
+      <nav>
+        <a href="/cv">Currículum</a>
+        <a href="/notas" aria-current="page">Notas</a>
+        <a href="https://github.com/myheroxd" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Un servidor de Minecraft en un Codespace, con límite de una hora</h1>
+      <p class="meta">17 de noviembre de 2026 · 6 minutos</p>
+      <p class="entradilla">Quería jugar con amigos sin dejar un equipo encendido 24 horas. Terminé con un Codespace, un túnel y un limitador de tiempo que avisa por el chat.</p>
+
+      <h2>El punto de partida</h2>
+      <p>Un Codespace gratuito da 4 núcleos y 16 GB durante unas horas al mes. Para un servidor de Minecraft con 4 jugadores sobra. El problema es que se para solo a los 30 minutos de inactividad y que no tiene IP pública.</p>
+
+      <h2>El servidor</h2>
+      <p>Java 25 y el servidor de la versión correspondiente, arrancado en segundo plano:</p>
+      <pre><code>nohup java -Xms1G -Xmx4G -jar purpur.jar nogui &gt; /tmp/server.log 2&gt;&amp;1 &amp;</code></pre>
+      <p><code>online-mode=true</code>, mundo normal y <code>RCON</code> activado, que luego hace falta para el limitador.</p>
+
+      <h2>Salir a internet</h2>
+      <p><code>playit.gg</code> resuelve el problema de la IP: un agente saliente crea un túnel y te da una dirección pública. El agente se queda escuchando y el túnel apunta a <code>127.0.0.1:25565</code>.</p>
+      <p>El primer intento falló por dos motivos: el socket por defecto del demonio no tenía permisos en el contenedor y la clave del agente había quedado inválida. Con <code>--socket-path /tmp/playit.sock</code> y un agente nuevo, quedó conectado.</p>
+
+      <h2>El límite de una hora</h2>
+      <p>Aquí está la parte que de verdad me interesaba. Un script en Python habla con el servidor por RCON cada 15 segundos:</p>
+      <ul>
+        <li>Pregunta cuántos jugadores hay con <code>list</code>.</li>
+        <li>Solo suma tiempo si hay alguien conectado: el servidor encendido y vacío no gasta la hora.</li>
+        <li>Guarda el consumo del día en un JSON, así que el contador se reinicia a medianoche.</li>
+        <li>A los 10, 5 y 1 minutos avisa por el chat con <code>say</code>.</li>
+        <li>Al llegar a cero, avisa y lanza <code>stop</code>, que guarda el mundo antes de cerrar.</li>
+      </ul>
+      <pre><code>say [MSX] Quedan 10 minutos de juego hoy. Cuando se agoten, el servidor se apagará.</code></pre>
+      <p>Y un aviso extra a los 20 minutos de sesión, porque GitHub para el Codespace a los 30 y conviene saber que se acerca el final.</p>
+
+      <h2>Lo que no se puede</h2>
+      <p>El idle timeout son 30 minutos en el plan gratuito y no se puede subir: lo comprobé por API y sigue en 30. Un servidor de Minecraft no cuenta como actividad. La consecuencia es jugar en dos tandas de media hora, con el contador diario conservado entre ambas.</p>
+
+      <h2>Conclusión</h2>
+      <p>Para partidas con amigos funciona y no cuesta nada, pero no es un servidor 24/7: es un servidor que se enciende cuando alguien lo pide y se apaga solo. Si algún día quiero algo serio, el siguiente paso es un equipo en casa o una VPS pequeña.</p>
+    </main>
+    <footer>
+      <span>© 2026 · jesusefx.es</span>
+      <a href="/privacidad">Privacidad</a>
+      <a href="/aviso-legal">Aviso legal</a>
+    </footer>
+  </div>
+</body>
+</html>

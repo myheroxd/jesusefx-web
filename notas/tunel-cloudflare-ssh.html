@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo entro por SSH a casa sin abrir puertos</title>
+<meta name="description" content="Montaje de un túnel de Cloudflare con Access para acceder por SSH al equipo de casa desde cualquier red, sin tocar el router.">
+<link rel="canonical" href="https://jesusefx.es/notas/tunel-cloudflare-ssh">
+<meta name="author" content="Jesús-Ángel Escartín García">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="jesusefx.es">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="https://jesusefx.es/notas/tunel-cloudflare-ssh">
+<meta property="og:title" content="Notas — jesusefx.es">
+<meta property="og:description" content="Artículos sobre sistemas, redes y el homelab de Jesús-Ángel Escartín García.">
+<meta property="og:image" content="https://jesusefx.es/favicon-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<meta name="theme-color" content="#0b0f14">
+<style>
+  :root {
+    color-scheme: dark;
+    --fondo: #0b0f14;
+    --superficie: #11161d;
+    --linea: #1e2a38;
+    --texto: #e8eef6;
+    --texto-2: #9db0c4;
+    --texto-3: #74879c;
+    --enlace: #6fb1f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 24px 64px;
+    background: var(--fondo); color: var(--texto);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { width: 100%; max-width: 700px; margin: 0 auto; }
+  .cabecera { display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
+  .marca { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem; color: var(--texto-2); text-decoration: none; letter-spacing: .02em; }
+  nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  nav a { font-size: .9rem; color: var(--texto-2); text-decoration: none; }
+  nav a:hover, nav a[aria-current] { color: var(--texto); }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.2; margin: 0 0 12px; letter-spacing: -.01em; }
+  h2 { font-size: 1.15rem; margin: 32px 0 10px; }
+  p { margin: 0 0 16px; }
+  a { color: var(--enlace); }
+  .meta { font-size: .82rem; color: var(--texto-3); margin-bottom: 32px; }
+  .entradilla { color: var(--texto-2); font-size: 1.05rem; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .88em; background: var(--superficie); border: 1px solid var(--linea);
+    border-radius: 4px; padding: 2px 5px; }
+  pre { background: var(--superficie); border: 1px solid var(--linea); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 20px; }
+  pre code { background: none; border: 0; padding: 0; font-size: .86rem; line-height: 1.5; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--linea);
+    display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--texto-3); }
+  footer a { color: var(--texto-3); }
+  .lista { display: grid; gap: 18px; margin-top: 28px; }
+  .entrada { display: block; padding: 18px 20px; border: 1px solid var(--linea);
+    border-radius: 8px; background: var(--superficie); text-decoration: none; color: var(--texto); }
+  .entrada:hover { border-color: #2b3d52; }
+  .entrada h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--enlace); }
+  .entrada p { margin: 0; color: var(--texto-2); font-size: .93rem; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="cabecera">
+      <a class="marca" href="/">jesusefx.es</a>
+      <nav>
+        <a href="/cv">Currículum</a>
+        <a href="/notas" aria-current="page">Notas</a>
+        <a href="https://github.com/myheroxd" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Cómo entro por SSH a casa sin abrir puertos</h1>
+      <p class="meta">17 de noviembre de 2026 · 4 minutos</p>
+      <p class="entradilla">Mi router no tiene IP fija y no quería abrir el puerto 22 a internet. La solución fue un túnel de Cloudflare con una capa de acceso delante.</p>
+
+      <h2>El problema</h2>
+      <p>Quería administrar el equipo de casa desde el aula o desde el móvil, sin depender de la red local y sin exponer SSH a cualquiera. Abrir el puerto y confiar en la contraseña no me parecía aceptable, y la IP pública cambia cada cierto tiempo.</p>
+
+      <h2>La pieza que lo resuelve</h2>
+      <p><code>cloudflared</code> es un demonio que abre una conexión saliente hacia Cloudflare. El router no necesita ningún puerto abierto: es el equipo de casa el que llama hacia fuera.</p>
+      <pre><code>cloudflared tunnel create ssh-casa
+cloudflared tunnel route dns ssh-casa ssh.jesusefx.es</code></pre>
+      <p>El túnel se configura con un <code>config.yml</code> que apunta al SSH local:</p>
+      <pre><code>tunnel: ssh-casa
+credentials-file: /home/usuario/.cloudflared/ID.json
+
+ingress:
+  - hostname: ssh.jesusefx.es
+    service: ssh://localhost:22
+  - service: http_status:404</code></pre>
+      <p>Y como servicio del sistema, para que arranque solo:</p>
+      <pre><code>sudo cloudflared service install</code></pre>
+
+      <h2>La capa de acceso</h2>
+      <p>El túnel no basta: si publico SSH tal cual, cualquiera lo alcanza. En Cloudflare Zero Trust creé una aplicación de tipo <em>self-hosted</em> para <code>ssh.jesusefx.es</code> con una política que solo permite mi correo, con código de un solo uso. Quien no esté en la política no llega ni a ver el puerto.</p>
+
+      <h2>El cliente</h2>
+      <p>En el equipo desde el que me conecto, el bloque de <code>~/.ssh/config</code>:</p>
+      <pre><code>Host casa
+  HostName ssh.jesusefx.es
+  User jesusefx
+  ProxyCommand cloudflared access ssh --hostname %h</code></pre>
+      <p>A partir de ahí, <code>ssh casa</code> y listo, desde cualquier red.</p>
+
+      <h2>Lo que falló por el camino</h2>
+      <ul>
+        <li>El servicio del sistema no arrancaba con el fichero de credenciales mal referenciado. Revisar la ruta absoluta fue suficiente.</li>
+        <li>La sesión de Access caduca. Al principio me extrañaba que pidiera el código otra vez; es el comportamiento normal, y se ajusta en la política.</li>
+        <li>Probar el túnel desde la propia red de casa no demuestra nada: hay que hacerlo desde fuera, con datos móviles o desde otro sitio.</li>
+      </ul>
+
+      <h2>Resultado</h2>
+      <p>Un acceso por SSH estable, sin abrir puertos, con autenticación de Cloudflare por delante y sin depender de la IP del router. Para administrar un equipo de casa o un servidor pequeño me parece la opción más limpia que he probado.</p>
+    </main>
+    <footer>
+      <span>© 2026 · jesusefx.es</span>
+      <a href="/privacidad">Privacidad</a>
+      <a href="/aviso-legal">Aviso legal</a>
+    </footer>
+  </div>
+</body>
+</html>

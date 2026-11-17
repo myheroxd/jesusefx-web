@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo despliego esta web sin entrar en ningún panel</title>
+<meta name="description" content="El flujo de despliegue de jesusefx.es: Workers, Wrangler, un token con permisos mínimos y un script que publica y purga la caché.">
+<link rel="canonical" href="https://jesusefx.es/notas/desplegar-web-sin-panel">
+<meta name="author" content="Jesús-Ángel Escartín García">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="jesusefx.es">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="https://jesusefx.es/notas/desplegar-web-sin-panel">
+<meta property="og:title" content="Notas — jesusefx.es">
+<meta property="og:description" content="Artículos sobre sistemas, redes y el homelab de Jesús-Ángel Escartín García.">
+<meta property="og:image" content="https://jesusefx.es/favicon-512.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<meta name="theme-color" content="#0b0f14">
+<style>
+  :root {
+    color-scheme: dark;
+    --fondo: #0b0f14;
+    --superficie: #11161d;
+    --linea: #1e2a38;
+    --texto: #e8eef6;
+    --texto-2: #9db0c4;
+    --texto-3: #74879c;
+    --enlace: #6fb1f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 24px 64px;
+    background: var(--fondo); color: var(--texto);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { width: 100%; max-width: 700px; margin: 0 auto; }
+  .cabecera { display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
+  .marca { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .82rem; color: var(--texto-2); text-decoration: none; letter-spacing: .02em; }
+  nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  nav a { font-size: .9rem; color: var(--texto-2); text-decoration: none; }
+  nav a:hover, nav a[aria-current] { color: var(--texto); }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.2; margin: 0 0 12px; letter-spacing: -.01em; }
+  h2 { font-size: 1.15rem; margin: 32px 0 10px; }
+  p { margin: 0 0 16px; }
+  a { color: var(--enlace); }
+  .meta { font-size: .82rem; color: var(--texto-3); margin-bottom: 32px; }
+  .entradilla { color: var(--texto-2); font-size: 1.05rem; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .88em; background: var(--superficie); border: 1px solid var(--linea);
+    border-radius: 4px; padding: 2px 5px; }
+  pre { background: var(--superficie); border: 1px solid var(--linea); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 20px; }
+  pre code { background: none; border: 0; padding: 0; font-size: .86rem; line-height: 1.5; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--linea);
+    display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--texto-3); }
+  footer a { color: var(--texto-3); }
+  .lista { display: grid; gap: 18px; margin-top: 28px; }
+  .entrada { display: block; padding: 18px 20px; border: 1px solid var(--linea);
+    border-radius: 8px; background: var(--superficie); text-decoration: none; color: var(--texto); }
+  .entrada:hover { border-color: #2b3d52; }
+  .entrada h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--enlace); }
+  .entrada p { margin: 0; color: var(--texto-2); font-size: .93rem; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="cabecera">
+      <a class="marca" href="/">jesusefx.es</a>
+      <nav>
+        <a href="/cv">Currículum</a>
+        <a href="/notas" aria-current="page">Notas</a>
+        <a href="https://github.com/myheroxd" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Cómo despliego esta web sin entrar en ningún panel</h1>
+      <p class="meta">17 de noviembre de 2026 · 5 minutos</p>
+      <p class="entradilla">Esta web son ficheros estáticos servidos desde Cloudflare Workers. No hay panel de administración: publico desde la terminal, con un script y un token.</p>
+
+      <h2>Por qué así</h2>
+      <p>Porque el sitio es HTML y CSS, sin base de datos, y me interesa que cada cambio quede en Git. Subir ficheros por una interfaz web es más lento y más fácil de romper.</p>
+
+      <h2>La configuración de Workers</h2>
+      <pre><code>{
+  "name": "web",
+  "compatibility_date": "2026-11-14",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}</code></pre>
+      <p>Con <code>html_handling</code> en automático, <code>/cv</code> sirve <code>cv.html</code> sin que el usuario vea la extensión. <code>not_found_handling</code> usa mi propio <code>404.html</code>.</p>
+
+      <h2>El token</h2>
+      <p>Un token de API con dos permisos: <em>Workers Scripts: Edit</em> y <em>Cache Purge</em>. Nada más. Vive en un fichero con permisos 600 fuera del repositorio, y el script comprueba antes de desplegar que sigue activo:</p>
+      <pre><code>curl -s -H "Authorization: Bearer $TOKEN" \
+  https://api.cloudflare.com/client/v4/user/tokens/verify</code></pre>
+
+      <h2>El script</h2>
+      <p>Cinco pasos: comprobar credenciales, copiar los ficheros, preparar el paquete, desplegar con Wrangler y sincronizar con GitHub.</p>
+      <pre><code>npx wrangler deploy
+curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONA/purge_cache" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  --data '{"purge_everything":true}'</code></pre>
+
+      <h2>Los errores que me costaron tiempo</h2>
+      <ul>
+        <li><strong>Caché de la CDN.</strong> El despliegue funcionaba pero seguía viendo el HTML viejo. La purga va ahora dentro del script, no como paso mental.</li>
+        <li><strong>Directorios ocultos.</strong> <code>cp *</code> no copia <code>.well-known</code>. Con <code>cp -a "$origen"/.</code> se copia todo, incluido lo que empieza por punto.</li>
+        <li><strong>Errores silenciados.</strong> Un <code>| grep ... || true</code> ocultaba que el despliegue había fallado. Ahora, si la comprobación del token falla, el script se para.</li>
+      </ul>
+
+      <h2>Resultado</h2>
+      <p>Publicar es un comando. El script despliega, purga, comprueba las rutas con <code>curl</code> y sube el commit a GitHub con el mismo mensaje. Si algo falla, no hay despliegue a medias: se para antes de tocar producción.</p>
+    </main>
+    <footer>
+      <span>© 2026 · jesusefx.es</span>
+      <a href="/privacidad">Privacidad</a>
+      <a href="/aviso-legal">Aviso legal</a>
+    </footer>
+  </div>
+</body>
+</html>
