@@ -17,6 +17,7 @@ Publicar cambios en `jesusefx.es`. La documentación del montaje está en [READM
 | `worker.js` | Worker del formulario y del listado |
 | `favicon.svg`, `favicon-*.png`, `apple-touch-icon.png` | Iconos |
 | `site.webmanifest` | Manifest para móvil |
+| `estilo.css` | Hoja de estilos común de notas y legales |
 | `comprobar.sh` | Comprueba el sitemap y las rutas publicadas |
 
 ## Publicar
@@ -34,6 +35,20 @@ El script hace cinco cosas:
 5. Comprueba las rutas con `curl` y sube el commit a GitHub.
 
 Si el token no es válido, se para antes de tocar producción.
+
+## El Worker del formulario
+
+El sitio estático y el Worker que gestiona el formulario (`contacto`) se publican por separado:
+
+```sh
+./deploy-contacto.sh
+```
+
+Comprueba el token, lee los enlaces actuales (KV `MENSAJES` y el secreto `TURNSTILE_SECRET`),
+sube `worker.js` conservándolos y verifica que `/mensajes` sigue detrás de Access.
+
+- `./deploy-contacto.sh --comprobar` solo enseña el estado, sin desplegar.
+- Si cambias `worker.js`, el commit se hace con `./deploy-web.sh`, que publica el repositorio.
 
 ## Token
 
