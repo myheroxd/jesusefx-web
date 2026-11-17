@@ -103,12 +103,16 @@ async function verificarCaptcha(secreto, token, ip) {
     formulario.append('remoteip', ip);
   }
 
-  const respuesta = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    body: formulario,
-  });
-  const resultado = await respuesta.json();
-  return resultado.success === true;
+  try {
+    const respuesta = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formulario,
+    });
+    const resultado = await respuesta.json();
+    return resultado.success === true;
+  } catch {
+    return false;
+  }
 }
 
 async function guardarMensaje(almacen, datos, pais) {
@@ -153,6 +157,10 @@ function origenValido(request) {
   return permitidos.some((base) => referencia.startsWith(base + '/'));
 }
 
+function redirigirAMensajes(request) {
+  return Response.redirect(new URL('/mensajes', request.url).toString(), 303);
+}
+
 async function borrarMensaje(request, env) {
   if (!origenValido(request)) {
     return new Response('Origen no permitido', { status: 403 });
@@ -165,7 +173,7 @@ async function borrarMensaje(request, env) {
   }
 
   await env.MENSAJES.delete(clave);
-  return Response.redirect(new URL('/mensajes', request.url).toString(), 303);
+  return redirigirAMensajes(request);
 }
 
 async function borrarTodos(request, env) {
@@ -178,7 +186,7 @@ async function borrarTodos(request, env) {
     await env.MENSAJES.delete(clave.name);
   }
 
-  return Response.redirect(new URL('/mensajes', request.url).toString(), 303);
+  return redirigirAMensajes(request);
 }
 
 function respuestaJson(objeto, codigo = 200, cabeceras = {}) {
@@ -207,7 +215,7 @@ function paginaMensajes(mensajes) {
         <time>${escaparHtml(datos.fecha)}</time>
       </header>
       <p>${escaparHtml(datos.mensaje).replace(/\n/g, '<br>')}</p>
-      <form method="post" action="/mensajes/borrar" onsubmit="return confirm('¿Borrar este mensaje?')">
+      <form method="post" action="/mensajes/borrar" data-confirmar="¿Borrar este mensaje?">
         <input type="hidden" name="clave" value="${escaparHtml(clave)}">
         <button type="submit">Borrar</button>
       </form>
@@ -241,9 +249,19 @@ function paginaMensajes(mensajes) {
 <main>
   <h1>Mensajes</h1>
   <p class="total">${texto}</p>
-  ${total > 0 ? `<form method="post" action="/mensajes/borrar-todos" onsubmit="return confirm('¿Borrar TODOS los mensajes? No se puede deshacer')">
+  ${total > 0 ? `<form method="post" action="/mensajes/borrar-todos" data-confirmar="¿Borrar TODOS los mensajes? No se puede deshacer">
     <button class="peligro" type="submit">Borrar todos</button>
   </form>` : ''}
   ${filas || '<p class="vacio">No hay mensajes todavía.</p>'}
-</main></html>`;
+</main>
+<script>
+  document.querySelectorAll('form[data-confirmar]').forEach((formulario) => {
+    formulario.addEventListener('submit', (evento) => {
+      if (!confirm(formulario.dataset.confirmar)) {
+        evento.preventDefault();
+      }
+    });
+  });
+</script>
+</html>`;
 }

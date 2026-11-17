@@ -18,58 +18,27 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <meta name="theme-color" content="#0b0f14">
+<link rel="stylesheet" href="/estilo.css">
 <style>
-  :root {
-    color-scheme: dark;
-    --fondo: #0b0f14;
-    --superficie: #11161d;
-    --linea: #1e2a38;
-    --texto: #e8eef6;
-    --texto-2: #9db0c4;
-    --texto-3: #74879c;
-    --enlace: #6fb1f0;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 40px 24px 64px;
-    background: var(--fondo); color: var(--texto);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.65;
-  }
-  .wrap { width: 100%; max-width: 700px; margin: 0 auto; }
-  .cabecera { display: flex; justify-content: space-between; align-items: baseline;
-    gap: 16px; flex-wrap: wrap; margin-bottom: 48px; }
-  .marca { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: .82rem; color: var(--texto-2); text-decoration: none; letter-spacing: .02em; }
-  nav { display: flex; gap: 20px; flex-wrap: wrap; }
-  nav a { font-size: .9rem; color: var(--texto-2); text-decoration: none; }
-  nav a:hover, nav a[aria-current] { color: var(--texto); }
-  h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.2; margin: 0 0 12px; letter-spacing: -.01em; }
-  h2 { font-size: 1.15rem; margin: 32px 0 10px; }
-  p { margin: 0 0 16px; }
-  a { color: var(--enlace); }
-  .meta { font-size: .82rem; color: var(--texto-3); margin-bottom: 32px; }
-  .entradilla { color: var(--texto-2); font-size: 1.05rem; }
-  ul { padding-left: 20px; }
-  li { margin-bottom: 8px; }
-  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: .88em; background: var(--superficie); border: 1px solid var(--linea);
-    border-radius: 4px; padding: 2px 5px; }
-  pre { background: var(--superficie); border: 1px solid var(--linea); border-radius: 6px;
-    padding: 14px 16px; overflow-x: auto; margin: 0 0 20px; }
-  pre code { background: none; border: 0; padding: 0; font-size: .86rem; line-height: 1.5; }
-  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--linea);
-    display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--texto-3); }
-  footer a { color: var(--texto-3); }
-  .lista { display: grid; gap: 18px; margin-top: 28px; }
-  .entrada { display: block; padding: 18px 20px; border: 1px solid var(--linea);
-    border-radius: 8px; background: var(--superficie); text-decoration: none; color: var(--texto); }
-  .entrada:hover { border-color: #2b3d52; }
-  .entrada h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--enlace); }
-  .entrada p { margin: 0; color: var(--texto-2); font-size: .93rem; }
+.meta { font-size: .82rem; color: var(--texto-3); margin-bottom: 32px; }
+.entradilla { color: var(--texto-2); font-size: 1.05rem; }
+.lista { display: grid; gap: 18px; margin-top: 28px; }
+.entrada {
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: var(--superficie);
+  text-decoration: none;
+  color: var(--texto);
+}
+.entrada:hover { border-color: #2b3d52; }
+.entrada h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--enlace); }
+.entrada p { margin: 0; color: var(--texto-2); font-size: .93rem; }
 </style>
 </head>
 <body>
+  <a class="saltar" href="#contenido">Ir al contenido</a>
   <div class="wrap">
     <header class="cabecera">
       <a class="marca" href="/">jesusefx.es</a>
@@ -80,7 +49,7 @@
         <a href="/#contacto">Contacto</a>
       </nav>
     </header>
-    <main>
+    <main id="contenido">
       <h1>Cómo entro por SSH a casa sin abrir puertos</h1>
       <p class="meta">17 de noviembre de 2026 · 4 minutos</p>
       <p class="entradilla">Mi router no tiene IP fija y no quería abrir el puerto 22 a internet. La solución fue un túnel de Cloudflare con una capa de acceso delante.</p>

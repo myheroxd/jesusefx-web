@@ -1,0 +1,91 @@
+:root {
+  color-scheme: dark;
+  --fondo: #0b0f14;
+  --superficie: #11161d;
+  --linea: #1e2a38;
+  --texto: #e8eef6;
+  --texto-2: #9db0c4;
+  --texto-3: #74879c;
+  --enlace: #6fb1f0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 40px 24px 64px;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.65;
+}
+.wrap, .page { width: 100%; max-width: 700px; margin: 0 auto; }
+.page { max-width: 760px; }
+.cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+.marca {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .82rem;
+  color: var(--texto-2);
+  text-decoration: none;
+  letter-spacing: .02em;
+}
+.marca:hover { color: var(--texto); }
+nav { display: flex; gap: 20px; flex-wrap: wrap; }
+nav a { font-size: .9rem; color: var(--texto-2); text-decoration: none; }
+nav a:hover, nav a[aria-current="page"] { color: var(--texto); }
+h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.2; margin: 0 0 12px; letter-spacing: -.01em; }
+h2 { font-size: 1.15rem; margin: 32px 0 10px; color: var(--texto); }
+p { margin: 0 0 16px; }
+a { color: var(--enlace); }
+ul { padding-left: 20px; }
+li { margin-bottom: 8px; }
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .88em;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+pre {
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 0 0 20px;
+}
+pre code { background: none; border: 0; padding: 0; font-size: .86rem; line-height: 1.5; }
+footer {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--linea);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: .82rem;
+  color: var(--texto-3);
+}
+footer a { color: var(--texto-3); }
+.saltar {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--superficie);
+  color: var(--texto);
+  padding: 10px 16px;
+  border-radius: 0 0 8px 0;
+  z-index: 10;
+  text-decoration: none;
+}
+.saltar:focus { left: 0; }
+a:focus-visible, button:focus-visible, input:focus-visible,
+textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--enlace);
+  outline-offset: 2px;
+}
