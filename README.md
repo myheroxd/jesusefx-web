@@ -98,7 +98,7 @@ Aplicación autoalojada sobre `ssh.jesusefx.es`, política **Allow** por correo,
 
 ### 4.5 Web estática
 
-Subí una carpeta con **12 archivos** (`index.html`, `404.html`, `cv.html`, `cv.pdf`, `privacidad.html`, `aviso-legal.html`, los cuatro iconos y `site.webmanifest`) mediante **Workers & Pages → Create → Upload and deploy**. Cloudflare crea un Worker de activos estáticos y le asocia el dominio raíz.
+El sitio son archivos estáticos servidos por el Worker `web`. Se publican con `deploy-web.sh` desde el repositorio (Wrangler y un token con permisos mínimos), no desde el panel: el script copia los archivos, despliega, purga la caché y sube el commit. Los detalles están en [DESPLIEGUE.md](DESPLIEGUE.md).
 
 El Worker sirve los archivos con estas reglas:
 
@@ -147,6 +147,14 @@ Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow 
 
 ---
 
+### 4.11 Notas, sitemap y SEO
+
+El sitio tiene una sección de notas (`/notas/`) con artículos técnicos en primera persona. Cada página es HTML estático con su `canonical`, Open Graph y, en la portada, datos estructurados `Person`.
+
+- `sitemap.xml` lista todas las URLs públicas. Se actualiza a mano al añadir una página.
+- `robots.txt` permite todo y apunta al sitemap, aunque Cloudflare sirve su propio *robots.txt* gestionado (Content Signals), sin bloqueos.
+- `IndexNow` se usa para avisar a Bing de los cambios: hay una clave en la raíz (`<clave>.txt`) y se envía el listado de URLs a `api.indexnow.org`.
+
 ## 5. Inventario
 
 ### DNS
@@ -172,6 +180,8 @@ Aplicación autoalojada `api.jesusefx.es` **ruta `/mensajes`**, política Allow 
 | Secreto | `TURNSTILE_SECRET` | Solo en `contacto` |
 | Turnstile | widget `jesusefx.es` | Modo gestionado |
 | Email Routing | `contacto@jesusefx.es` | Reenvío a mi buzón personal |
+| Sitemap | `https://jesusefx.es/sitemap.xml` | 7 URLs públicas |
+| IndexNow | clave en la raíz | Avisos a Bing |
 
 ### Access
 
