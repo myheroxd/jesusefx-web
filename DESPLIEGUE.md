@@ -41,7 +41,13 @@ Si el token no es válido, se para antes de tocar producción.
 El sitio estático y el Worker que gestiona el formulario (`contacto`) se publican por separado:
 
 ```sh
-./deploy-contacto.sh
+./deploy-contacto.sh            # desde la raíz del repositorio
+```
+
+Si estás en el directorio del harness:
+
+```sh
+./web-jesusefx/deploy-contacto.sh
 ```
 
 Comprueba el token, lee los enlaces actuales (KV `MENSAJES` y el secreto `TURNSTILE_SECRET`),
