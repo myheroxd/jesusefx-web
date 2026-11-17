@@ -17,6 +17,7 @@ Publicar cambios en `jesusefx.es`. La documentación del montaje está en [READM
 | `worker.js` | Worker del formulario y del listado |
 | `favicon.svg`, `favicon-*.png`, `apple-touch-icon.png` | Iconos |
 | `site.webmanifest` | Manifest para móvil |
+| `comprobar.sh` | Comprueba el sitemap y las rutas publicadas |
 
 ## Publicar
 
@@ -50,7 +51,14 @@ Vive en `~/.config/cloudflare/deploy-token`, con permisos 600 y fuera del reposi
 ## Comprobar
 
 ```sh
-curl -sI https://jesusefx.es | head -1
-curl -s https://jesusefx.es/sitemap.xml | head -3
-curl -s https://jesusefx.es/no-existe | grep -o '<title>[^<]*'
+./comprobar.sh
+```
+
+Recorre el sitemap, pide cada URL y comprueba que responde 200 con el `canonical`
+correcto, que todas tienen `lastmod`, que `robots.txt` y el sitemap se sirven y que
+una ruta inexistente devuelve 404. Sale con código 1 si algo falla, así que sirve
+para encadenarlo después de publicar:
+
+```sh
+./deploy-web.sh "cambio" && ./web-jesusefx/comprobar.sh
 ```
