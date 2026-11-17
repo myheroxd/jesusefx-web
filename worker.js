@@ -28,6 +28,14 @@ export default {
       return listarMensajes(env);
     }
 
+    if (url.pathname === '/mensajes/borrar' && request.method === 'POST') {
+      return borrarMensaje(request, env);
+    }
+
+    if (url.pathname === '/mensajes/borrar-todos' && request.method === 'POST') {
+      return borrarTodos(request, env);
+    }
+
     return respuestaJson({ error: 'no_encontrado' }, 404);
   },
 };
@@ -124,13 +132,53 @@ async function listarMensajes(env) {
   for (const clave of claves) {
     const guardado = await env.MENSAJES.get(clave.name);
     if (guardado) {
-      mensajes.push(JSON.parse(guardado));
+      mensajes.push({ clave: clave.name, datos: JSON.parse(guardado) });
     }
   }
 
   return new Response(paginaMensajes(mensajes), {
     headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
   });
+}
+
+function origenValido(request) {
+  const origen = request.headers.get('Origin');
+  const permitidos = ['https://api.jesusefx.es', 'https://jesusefx.es'];
+
+  if (origen) {
+    return permitidos.includes(origen);
+  }
+
+  const referencia = request.headers.get('Referer') || '';
+  return permitidos.some((base) => referencia.startsWith(base + '/'));
+}
+
+async function borrarMensaje(request, env) {
+  if (!origenValido(request)) {
+    return new Response('Origen no permitido', { status: 403 });
+  }
+
+  const formulario = await request.formData();
+  const clave = String(formulario.get('clave') || '');
+  if (!clave.startsWith('msg:')) {
+    return new Response('Clave no válida', { status: 400 });
+  }
+
+  await env.MENSAJES.delete(clave);
+  return Response.redirect(new URL('/mensajes', request.url).toString(), 303);
+}
+
+async function borrarTodos(request, env) {
+  if (!origenValido(request)) {
+    return new Response('Origen no permitido', { status: 403 });
+  }
+
+  const listado = await env.MENSAJES.list({ prefix: 'msg:' });
+  for (const clave of listado.keys) {
+    await env.MENSAJES.delete(clave.name);
+  }
+
+  return Response.redirect(new URL('/mensajes', request.url).toString(), 303);
 }
 
 function respuestaJson(objeto, codigo = 200, cabeceras = {}) {
@@ -151,14 +199,18 @@ function escaparHtml(texto) {
 }
 
 function paginaMensajes(mensajes) {
-  const filas = mensajes.map((mensaje) => `
+  const filas = mensajes.map(({ clave, datos }) => `
     <article>
       <header>
-        <strong>${escaparHtml(mensaje.nombre)}</strong>
-        <a href="mailto:${escaparHtml(mensaje.email)}">${escaparHtml(mensaje.email)}</a>
-        <time>${escaparHtml(mensaje.fecha)}</time>
+        <strong>${escaparHtml(datos.nombre)}</strong>
+        <a href="mailto:${escaparHtml(datos.email)}">${escaparHtml(datos.email)}</a>
+        <time>${escaparHtml(datos.fecha)}</time>
       </header>
-      <p>${escaparHtml(mensaje.mensaje).replace(/\n/g, '<br>')}</p>
+      <p>${escaparHtml(datos.mensaje).replace(/\n/g, '<br>')}</p>
+      <form method="post" action="/mensajes/borrar" onsubmit="return confirm('¿Borrar este mensaje?')">
+        <input type="hidden" name="clave" value="${escaparHtml(clave)}">
+        <button type="submit">Borrar</button>
+      </form>
     </article>`).join('');
 
   const total = mensajes.length;
@@ -179,10 +231,19 @@ function paginaMensajes(mensajes) {
   time{color:#74879c;font-size:.78rem;margin-left:auto}
   p{margin:0;color:#c6d3e0;font-size:.94rem}
   .vacio{color:#74879c}
+  form{margin:12px 0 0}
+  button{background:#1b2430;border:1px solid #2b3d52;color:#e8eef6;border-radius:6px;
+         padding:5px 12px;font-size:.82rem;cursor:pointer;font-family:inherit}
+  button:hover{border-color:#3a82cb}
+  button.peligro{border-color:#7a2c35;color:#f0b3bb}
+  button.peligro:hover{border-color:#b5434f}
 </style>
 <main>
   <h1>Mensajes</h1>
   <p class="total">${texto}</p>
+  ${total > 0 ? `<form method="post" action="/mensajes/borrar-todos" onsubmit="return confirm('¿Borrar TODOS los mensajes? No se puede deshacer')">
+    <button class="peligro" type="submit">Borrar todos</button>
+  </form>` : ''}
   ${filas || '<p class="vacio">No hay mensajes todavía.</p>'}
 </main></html>`;
 }
