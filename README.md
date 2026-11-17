@@ -155,6 +155,22 @@ El sitio tiene una sección de notas (`/notas/`) con artículos técnicos en pri
 - `robots.txt` permite todo y apunta al sitemap, aunque Cloudflare sirve su propio *robots.txt* gestionado (Content Signals), sin bloqueos.
 - `IndexNow` se usa para avisar a Bing de los cambios: hay una clave en la raíz (`<clave>.txt`) y se envía el listado de URLs a `api.indexnow.org`.
 
+### 4.12 Protecciones antispam
+
+**Formulario** (`worker.js`) — además de Turnstile:
+
+- Campo trampa (`empresa`) oculto: si llega relleno, se descarta.
+- Tiempo mínimo de 3 segundos entre cargar la página y enviar.
+- Límite por IP: 1 mensaje por minuto y 3 al día, contados en KV.
+- Duplicados: el mismo texto desde la misma IP en una hora se ignora (hash SHA-256 de IP y mensaje).
+- Filtro de enlaces (más de dos URLs) y de palabras habituales de spam.
+
+**Cloudflare** — regla de *rate limiting* sobre `api.jesusefx.es/contact`: 5 peticiones por IP
+en 10 segundos; al superarla, bloqueo de 10 segundos.
+
+**Correo** — SPF `-all` y DMARC `p=quarantine` con informes a `contacto@jesusefx.es`. Cloudflare
+Email Routing no filtra spam; el filtro real es el de Gmail.
+
 ## 5. Inventario
 
 ### DNS
