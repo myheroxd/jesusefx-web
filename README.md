@@ -201,6 +201,18 @@ Auditoría del 18 de noviembre de 2026. Los cambios aplicados:
 | DNSSEC | Activado y DS registrado en DonDominio (18/11/2026), a la espera de propagación en el registro `.es` |
 | Límite de frecuencia del formulario | Regla `http_ratelimit`, 5 peticiones/10 s por IP |
 
+### Verificación del JWT de Access
+
+Las rutas de administración (`/mensajes`, `/mensajes/borrar`, `/mensajes/borrar-todos`)
+comprueban la cabecera `Cf-Access-Jwt-Assertion` que inyecta Cloudflare Access:
+
+- firma RS256 con las claves publicadas en `https://holy-field-ca19.cloudflareaccess.com/cdn-cgi/access/certs`;
+- `aud` igual al de la aplicación de Access, guardado como secreto `ACCESS_AUD`;
+- `exp`, `nbf` e `iss`.
+
+Si el secreto `ACCESS_AUD` no existe, el Worker no exige el token: así se puede desactivar
+la comprobación borrando el secreto, sin tocar código.
+
 La copia de seguridad previa está en `~/backups/jesusefx-seguridad-20261118-2102/`.
 
 DS registrado:
