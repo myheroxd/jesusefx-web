@@ -75,18 +75,32 @@ if [[ "${1:-}" == "--comprobar" ]]; then
 fi
 
 echo "== 3/4 Desplegando"
-META="$(python3 - "$COMPAT" "$ALMACEN" <<'PY'
+META="$(python3 - "$COMPAT" "$ALMACEN" "$AJUSTES" <<'PY'
 import json
 import sys
 
+compat, almacen, ruta = sys.argv[1], sys.argv[2], sys.argv[3]
+datos = json.load(open(ruta))
+enlaces = datos["result"].get("bindings", [])
+
+bindings = [{
+    "type": "kv_namespace",
+    "name": "MENSAJES",
+    "namespace_id": almacen,
+}]
+
+for enlace in enlaces:
+    if enlace["type"] == "plain_text":
+        bindings.append({
+            "type": "plain_text",
+            "name": enlace["name"],
+            "text": enlace.get("text", ""),
+        })
+
 print(json.dumps({
     "main_module": "worker.js",
-    "compatibility_date": sys.argv[1],
-    "bindings": [{
-        "type": "kv_namespace",
-        "name": "MENSAJES",
-        "namespace_id": sys.argv[2],
-    }],
+    "compatibility_date": compat,
+    "bindings": bindings,
 }))
 PY
 )"

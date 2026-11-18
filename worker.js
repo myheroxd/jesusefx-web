@@ -11,6 +11,7 @@ const TTL_MINUTO = 60;
 const TTL_DUPLICADO = 3600;
 const MAX_ENLACES = 2;
 const SEGUNDOS_MINIMOS = 3;
+const EQUIPO_ACCESS = 'holy-field-ca19.cloudflareaccess.com';
 const PALABRAS_BLOQUEADAS = [
   'casino', 'crypto', 'bitcoin', 'viagra', 'prestamo', 'préstamo',
   'backlink', 'escort', 'porn', 'xxx', 'lottery', 'lotería', 'apuestas',
@@ -33,6 +34,13 @@ export default {
 
     if (url.pathname === '/contact') {
       return procesarContacto(request, env);
+    }
+
+    if (url.pathname === '/mensajes' || url.pathname.startsWith('/mensajes/')) {
+      const autorizado = await verificarAccess(request, env);
+      if (!autorizado) {
+        return new Response('No autorizado', { status: 403 });
+      }
     }
 
     if (url.pathname === '/mensajes') {
@@ -135,6 +143,102 @@ function validar(datos) {
     return 'consentimiento';
   }
   return '';
+}
+
+let cacheCertificados = null;
+
+function base64urlBytes(texto) {
+  const normal = texto.replace(/-/g, '+').replace(/_/g, '/');
+  const relleno = normal + '='.repeat((4 - (normal.length % 4)) % 4);
+  const binario = atob(relleno);
+  const bytes = new Uint8Array(binario.length);
+  for (let i = 0; i < binario.length; i++) {
+    bytes[i] = binario.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function clavesAccess(equipo) {
+  const ahora = Date.now();
+  if (cacheCertificados && cacheCertificados.expira > ahora) {
+    return cacheCertificados.claves;
+  }
+
+  const respuesta = await fetch(`https://${equipo}/cdn-cgi/access/certs`);
+  if (!respuesta.ok) {
+    throw new Error('no se pudieron leer los certificados de Access');
+  }
+
+  const datos = await respuesta.json();
+  const claves = new Map();
+  for (const jwk of datos.keys || []) {
+    if (jwk.kty !== 'RSA') continue;
+    const clave = await crypto.subtle.importKey(
+      'jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']
+    );
+    claves.set(jwk.kid, clave);
+  }
+
+  cacheCertificados = { claves, expira: ahora + 300000 };
+  return claves;
+}
+
+async function verificarAccess(request, env) {
+  if (!env.ACCESS_AUD) {
+    return true;
+  }
+
+  const token = request.headers.get('Cf-Access-Jwt-Assertion');
+  if (!token) {
+    return false;
+  }
+
+  const partes = token.split('.');
+  if (partes.length !== 3) {
+    return false;
+  }
+
+  const [cabecera64, carga64, firma64] = partes;
+
+  try {
+    const cabecera = JSON.parse(new TextDecoder().decode(base64urlBytes(cabecera64)));
+    if (cabecera.alg !== 'RS256') {
+      return false;
+    }
+
+    const equipo = env.ACCESS_TEAM || EQUIPO_ACCESS;
+    const clave = (await clavesAccess(equipo)).get(cabecera.kid);
+    if (!clave) {
+      return false;
+    }
+
+    const firmado = new TextEncoder().encode(`${cabecera64}.${carga64}`);
+    const valida = await crypto.subtle.verify(
+      'RSASSA-PKCS1-v1_5', clave, base64urlBytes(firma64), firmado
+    );
+    if (!valida) {
+      return false;
+    }
+
+    const carga = JSON.parse(new TextDecoder().decode(base64urlBytes(carga64)));
+    const destinatarios = Array.isArray(carga.aud) ? carga.aud : [carga.aud];
+    if (!destinatarios.includes(env.ACCESS_AUD)) {
+      return false;
+    }
+    if (typeof carga.exp !== 'number' || carga.exp * 1000 <= Date.now()) {
+      return false;
+    }
+    if (carga.nbf && carga.nbf * 1000 > Date.now() + 30000) {
+      return false;
+    }
+    if (carga.iss !== `https://${equipo}`) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function detectarSpam(mensaje) {

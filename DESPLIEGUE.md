@@ -82,5 +82,5 @@ una ruta inexistente devuelve 404. Sale con código 1 si algo falla, así que si
 para encadenarlo después de publicar:
 
 ```sh
-./deploy-web.sh "cambio" && ./web-jesusefx/comprobar.sh
+./deploy-web.sh "cambio" && ./comprobar.sh
 ```
