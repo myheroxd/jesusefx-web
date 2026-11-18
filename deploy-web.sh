@@ -37,9 +37,7 @@ for f in "${FILES[@]}"; do
 done
 cp "$SRC/.well-known/discord" "$BUILD/public/.well-known/discord"
 cp -a "$SRC/notas" "$BUILD/public/notas"
-for extra in "$SRC"/*.txt "$SRC"/*.xml; do
-  cp "$extra" "$BUILD/public/"
-done
+cp "$SRC/4f9c2d7a1b8e6c3f5a2d9e7b1c4f8a63.txt" "$BUILD/public/"
 
 cat > "$BUILD/wrangler.jsonc" <<'JSON'
 {
@@ -58,7 +56,7 @@ JSON
 echo "== 3/5 Desplegando en Cloudflare"
 cd "$BUILD"
 CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" \
-  npx -y wrangler@latest deploy
+  npx -y wrangler@4.164.0 deploy
 
 echo "   Purgando la caché del dominio"
 curl -s -o /dev/null -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/purge_cache" \
@@ -81,6 +79,23 @@ if [[ -z "$(git status --porcelain)" ]]; then
   echo "Sin cambios en el repositorio: nada que commitear."
 else
   git add -A
+
+  PELIGROSOS="$(git diff --cached --name-only | grep -E '(^|/)(\.env(\..*)?|.*\.pem|.*\.key|id_(rsa|ed25519)|deploy-token)$' || true)"
+  if [[ -n "$PELIGROSOS" ]]; then
+    echo "ERROR: hay ficheros que parecen secretos en el commit:"
+    echo "$PELIGROSOS"
+    echo "Quitados del índice; revisa antes de volver a desplegar."
+    git reset -q
+    exit 1
+  fi
+
+  if git diff --cached -U0 | grep -aE '^\+.*(BEGIN [A-Z ]*PRIVATE KEY|Bearer [A-Za-z0-9._-]{20,}|ghp_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9]{20,})' > /dev/null; then
+    echo "ERROR: una línea añadida contiene algo que parece un token o una clave privada."
+    echo "Commit cancelado; revisa los cambios."
+    git reset -q
+    exit 1
+  fi
+
   MENSAJE="${1:-Despliegue automático $(date '+%Y-%m-%d %H:%M')}"
   git commit -q -m "$MENSAJE"
   echo "Commit creado: $(git log --oneline -1)"

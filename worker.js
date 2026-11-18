@@ -2,6 +2,7 @@ const ORIGEN = 'https://jesusefx.es';
 const MAX_NOMBRE = 100;
 const MAX_EMAIL = 200;
 const MAX_MENSAJE = 2000;
+const MAX_CUERPO = 8192;
 const MAX_LISTA = 200;
 const TTL_MENSAJE = 31536000;
 const MAX_POR_DIA = 3;
@@ -62,6 +63,11 @@ export default {
 async function procesarContacto(request, env) {
   if (request.method !== 'POST') {
     return respuestaJson({ error: 'metodo' }, 405, CORS);
+  }
+
+  const tamano = Number(request.headers.get('content-length') || 0);
+  if (tamano > MAX_CUERPO) {
+    return respuestaJson({ error: 'grande' }, 413, CORS);
   }
 
   let cuerpo;
@@ -164,7 +170,9 @@ async function clavesAccess(equipo) {
     return cacheCertificados.claves;
   }
 
-  const respuesta = await fetch(`https://${equipo}/cdn-cgi/access/certs`);
+  const respuesta = await fetch(`https://${equipo}/cdn-cgi/access/certs`, {
+    signal: AbortSignal.timeout(5000),
+  });
   if (!respuesta.ok) {
     throw new Error('no se pudieron leer los certificados de Access');
   }
@@ -255,16 +263,17 @@ function detectarSpam(mensaje) {
   return '';
 }
 
-function clavesDeFrecuencia(ip) {
+async function clavesDeFrecuencia(ip) {
   const ahora = new Date().toISOString();
+  const identificador = await huella(ip, 'limite');
   return {
-    minuto: `rl:${ip}:m:${ahora.slice(0, 16)}`,
-    dia: `rl:${ip}:d:${ahora.slice(0, 10)}`,
+    minuto: `rl:${identificador}:m:${ahora.slice(0, 16)}`,
+    dia: `rl:${identificador}:d:${ahora.slice(0, 10)}`,
   };
 }
 
 async function comprobarFrecuencia(almacen, ip) {
-  const claves = clavesDeFrecuencia(ip);
+  const claves = await clavesDeFrecuencia(ip);
   const [porMinuto, porDia] = await Promise.all([
     almacen.get(claves.minuto),
     almacen.get(claves.dia),
@@ -281,7 +290,7 @@ async function comprobarFrecuencia(almacen, ip) {
 }
 
 async function anotarEnvio(almacen, ip) {
-  const claves = clavesDeFrecuencia(ip);
+  const claves = await clavesDeFrecuencia(ip);
   const [porMinuto, porDia] = await Promise.all([
     almacen.get(claves.minuto),
     almacen.get(claves.dia),
