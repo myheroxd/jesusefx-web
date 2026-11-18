@@ -171,6 +171,24 @@ en 10 segundos; al superarla, bloqueo de 10 segundos.
 **Correo** — SPF `-all` y DMARC `p=quarantine` con informes a `contacto@jesusefx.es`. Cloudflare
 Email Routing no filtra spam; el filtro real es el de Gmail.
 
+### 4.13 Accesibilidad y ARIA
+
+El sitio usa HTML nativo (encabezados, listas, `label`, `button`, `nav`, `main`) y solo
+añade ARIA donde aporta: `role="status"` con `aria-live` para el estado del formulario,
+`aria-describedby` para el aviso de privacidad y `aria-current` en la navegación.
+
+Comprobado el 18 de noviembre de 2026 con:
+
+| Herramienta | Resultado |
+|---|---|
+| [axe-core](https://github.com/dequelabs/axe-core) 4.14 (WCAG 2.0/2.1/2.2 A y AA + buenas prácticas) | **0 violaciones** en las 8 páginas y en el listado de mensajes |
+| [W3C Nu HTML Checker](https://validator.w3.org/nu/) | **0 errores** en las 8 páginas y en el listado de mensajes |
+
+Comprobaciones que cubre axe y que pasan: atributos y roles ARIA válidos, referencias
+`aria-labelledby`/`aria-describedby` existentes, `aria-hidden` sin elementos enfocables,
+nombre accesible en botones y enlaces, etiquetas en los campos, un `main` y un `h1` por
+página, orden de encabezados, contraste de color, `lang` y `title`.
+
 ## 5. Inventario
 
 ### DNS
