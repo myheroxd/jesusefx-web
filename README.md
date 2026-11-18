@@ -213,6 +213,22 @@ comprueban la cabecera `Cf-Access-Jwt-Assertion` que inyecta Cloudflare Access:
 Si el secreto `ACCESS_AUD` no existe, el Worker no exige el token: así se puede desactivar
 la comprobación borrando el secreto, sin tocar código.
 
+### Endurecimiento (segunda pasada)
+
+| Cambio | Detalle |
+|---|---|
+| IP hasheada en los contadores | Las claves de KV guardan un SHA-256, no la IP; la política de privacidad es cierta |
+| Límite de cuerpo | 413 si `Content-Length` supera 8 KB, antes de parsear el JSON |
+| Tiempo máximo al leer claves de Access | 5 segundos |
+| Wrangler fijado | `wrangler@4.164.0` en vez de `@latest` |
+| Freno de secretos en el despliegue | Aborta el commit si aparece un `.env`, `.pem`, `.key`, `id_rsa` o una línea con una clave privada o un token |
+| Solo se publica la clave de IndexNow | Antes se copiaba cualquier `.txt` de la raíz |
+| TLS mínimo | 1.2 en el ajuste de zona |
+| Política de Access | Admite `herobrine.sg@gmail.com` y `escartingarcia.jesus@gmail.com` |
+
+Las reglas gestionadas de WAF no están disponibles en el plan gratuito: la API responde «not entitled».
+El límite de frecuencia propio (5 peticiones/10 s) y los contadores del Worker cubren el abuso básico.
+
 La copia de seguridad previa está en `~/backups/jesusefx-seguridad-20261118-2102/`.
 
 DS registrado:
