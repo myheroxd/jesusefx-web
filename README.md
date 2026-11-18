@@ -189,6 +189,22 @@ Comprobaciones que cubre axe y que pasan: atributos y roles ARIA válidos, refer
 nombre accesible en botones y enlaces, etiquetas en los campos, un `main` y un `h1` por
 página, orden de encabezados, contraste de color, `lang` y `title`.
 
+### 4.14 Seguridad
+
+Auditoría del 18 de noviembre de 2026. Los cambios aplicados:
+
+| Medida | Dónde |
+|---|---|
+| `workers.dev` desactivado en el Worker `contacto` | Cloudflare → Workers → `contacto` → Domains & Routes |
+| Cabeceras de seguridad (CSP, Referrer-Policy, X-Frame-Options, Permissions-Policy, COOP) | Regla de transformación de cabeceras de respuesta |
+| CAA | Registros DNS |
+| DNSSEC | Activado; el DS está pendiente en el registrador |
+| Límite de frecuencia del formulario | Regla `http_ratelimit`, 5 peticiones/10 s por IP |
+
+La copia de seguridad previa está en `~/backups/jesusefx-seguridad-20261118-2102/`.
+
+Pendiente: añadir el registro DS en DonDominio para que DNSSEC pase de `pending` a `active`.
+
 ## 5. Inventario
 
 ### DNS
