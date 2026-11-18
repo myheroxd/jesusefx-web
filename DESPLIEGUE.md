@@ -7,7 +7,8 @@ Publicar cambios en `jesusefx.es`. La documentación del montaje está en [READM
 | Archivo | Para qué |
 |---|---|
 | `index.html` | Portada, enlaces y formulario |
-| `cv.html`, `cv.pdf` | CV público y descargable |
+| `cv.html` | CV público en HTML |
+| `cv.pdf`, `cv-en.pdf` | CV en PDF, versión compatible con ATS (español e inglés) |
 | `notas/` | Sección de notas: índice y artículos |
 | `privacidad.html`, `aviso-legal.html` | Páginas legales |
 | `404.html` | Página de error |
