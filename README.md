@@ -195,15 +195,29 @@ Auditoría del 18 de noviembre de 2026. Los cambios aplicados:
 
 | Medida | Dónde |
 |---|---|
-| `workers.dev` desactivado en el Worker `contacto` | Cloudflare → Workers → `contacto` → Domains & Routes |
+| `workers.dev` desactivado en los Workers `contacto` y `web` | Cloudflare → Workers → Domains & Routes |
 | Cabeceras de seguridad (CSP, Referrer-Policy, X-Frame-Options, Permissions-Policy, COOP) | Regla de transformación de cabeceras de respuesta |
 | CAA | Registros DNS |
-| DNSSEC | Activado; el DS está pendiente en el registrador |
+| DNSSEC | Activado y DS registrado en DonDominio (18/11/2026), a la espera de propagación en el registro `.es` |
 | Límite de frecuencia del formulario | Regla `http_ratelimit`, 5 peticiones/10 s por IP |
 
 La copia de seguridad previa está en `~/backups/jesusefx-seguridad-20261118-2102/`.
 
-Pendiente: añadir el registro DS en DonDominio para que DNSSEC pase de `pending` a `active`.
+DS registrado:
+
+```
+jesusefx.es. 3600 IN DS 2371 13 2 CAF1DE7067739F96736DFAAC4BADAFE53BAB5EC35AEF44E279878553E41A15E6
+```
+
+Comprobar la propagación:
+
+```sh
+dig +short DS jesusefx.es
+dig +dnssec jesusefx.es | grep flags
+```
+
+Cuando el registro `.es` publique el DS, Cloudflare pasará el estado a `active` y las consultas
+mostrarán el bit `ad` (datos autenticados).
 
 ## 5. Inventario
 
