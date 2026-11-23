@@ -452,7 +452,7 @@ Fuera del repositorio, en el equipo de casa:
 |---|---|
 | `deploy-web.sh` | Script de despliegue completo (Cloudflare + GitHub) |
 | `deploy-web/` | Carpeta con los 12 archivos listos para subir |
-| `~/.ssh/deploy_web` | Deploy key de este repositorio |
+| GitHub | Autenticación por HTTPS con `gh` (sin claves SSH) |
 
 ---
 
