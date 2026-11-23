@@ -84,3 +84,26 @@ para encadenarlo después de publicar:
 ```sh
 ./deploy-web.sh "cambio" && ./comprobar.sh
 ```
+
+## Autenticación de GitHub
+
+El push usa **HTTPS con un token guardado en `~/.config/github/web-token`** (permisos 600),
+leído por el helper `~/.local/bin/git-credential-github-token`. No depende de `ssh-agent`
+ni de ninguna passphrase, así que funciona igual tras reiniciar.
+
+Token necesario: **fine-grained**, limitado al repositorio `myheroxd/jesusefx-web`,
+con permiso **Contents: Read and write**. Caducidad recomendada: un año.
+
+Para guardarlo (una vez):
+
+```sh
+install -m 600 /dev/null ~/.config/github/web-token
+printf '%s' 'EL_TOKEN' > ~/.config/github/web-token
+```
+
+Comprobar que funciona:
+
+```sh
+cd ~/Documentos/deepseek-harness/default-workspace/web-jesusefx
+git ls-remote --heads origin
+```

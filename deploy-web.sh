@@ -3,8 +3,6 @@
 # Uso: ./deploy-web.sh ["mensaje del commit"]
 set -euo pipefail
 
-export PATH="$HOME/.local/share/dsh-tauri/runtime/bin:$PATH"
-
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD="/tmp/site-build-web"
 ACCOUNT_ID="0e1ecd6fae57c76cdd054e50f2d810b7"
@@ -101,16 +99,15 @@ else
   echo "Commit creado: $(git log --oneline -1)"
 fi
 
-if [[ -z "$(git log --oneline origin/main..HEAD)" ]]; then
+if [[ -z "$(git log --oneline origin/main..HEAD 2>/dev/null)" ]]; then
   echo "GitHub ya está al día."
 else
-  SSH_KEY="$HOME/.ssh/deploy_web"
-  if [[ ! -f "$SSH_KEY" ]]; then
-    echo "AVISO: falta la clave de despliegue $SSH_KEY."
+  GH_TOKEN_FILE="$HOME/.config/github/web-token"
+  if [[ ! -f "$GH_TOKEN_FILE" ]]; then
+    echo "AVISO: falta el token de GitHub en $GH_TOKEN_FILE."
     echo "El despliegue está hecho; el push queda pendiente."
     exit 1
   fi
-  GIT_SSH_COMMAND="ssh -F /dev/null -i $SSH_KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$HOME/.ssh/known_hosts" \
-    git push -q origin main
+  git push -q origin main
   echo "Subido a GitHub: $(git log --oneline -1)"
 fi
