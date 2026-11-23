@@ -87,23 +87,27 @@ para encadenarlo después de publicar:
 
 ## Autenticación de GitHub
 
-El push usa **HTTPS con un token guardado en `~/.config/github/web-token`** (permisos 600),
-leído por el helper `~/.local/bin/git-credential-github-token`. No depende de `ssh-agent`
-ni de ninguna passphrase, así que funciona igual tras reiniciar.
+El push usa **HTTPS con las credenciales que resuelve `gh`**. `gh auth setup-git` deja
+git configurado para `github.com` y solo para ese host, así que el token no viaja a
+ningún otro servidor. No depende de `ssh-agent` ni de passphrase: funciona igual tras
+reiniciar, siempre que el llavero del sistema esté desbloqueado.
 
-Token necesario: **fine-grained**, limitado al repositorio `myheroxd/jesusefx-web`,
-con permiso **Contents: Read and write**. Caducidad recomendada: un año.
-
-Para guardarlo (una vez):
+Instalación y sesión (una vez por equipo):
 
 ```sh
-install -m 600 /dev/null ~/.config/github/web-token
-printf '%s' 'EL_TOKEN' > ~/.config/github/web-token
+pkexec pacman -S --needed github-cli
+gh auth login --with-token < ~/.config/github/web-token   # o gh auth login interactivo
+gh auth setup-git
 ```
+
+`~/.config/github/web-token` (permisos 600) se conserva como copia de respaldo del
+token; ya no lo lee ningún helper propio. Token necesario: **fine-grained**, limitado
+al repositorio `myheroxd/jesusefx-web`, con permiso **Contents: Read and write**.
 
 Comprobar que funciona:
 
 ```sh
+gh auth status
 cd ~/Documentos/deepseek-harness/default-workspace/web-jesusefx
 git ls-remote --heads origin
 ```

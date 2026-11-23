@@ -102,12 +102,13 @@ fi
 if [[ -z "$(git log --oneline origin/main..HEAD 2>/dev/null)" ]]; then
   echo "GitHub ya está al día."
 else
-  GH_TOKEN_FILE="$HOME/.config/github/web-token"
-  if [[ ! -f "$GH_TOKEN_FILE" ]]; then
-    echo "AVISO: falta el token de GitHub en $GH_TOKEN_FILE."
-    echo "El despliegue está hecho; el push queda pendiente."
+  # Las credenciales de GitHub las resuelve `gh` (gh auth setup-git), que solo
+  # responde para github.com. Si fallara el push, el aviso lo da git.
+  if git push -q origin main 2>/dev/null; then
+    echo "Subido a GitHub: $(git log --oneline -1)"
+  else
+    echo "AVISO: el despliegue está hecho, pero no se pudo subir a GitHub."
+    echo "Para arreglarlo: gh auth status"
     exit 1
   fi
-  git push -q origin main
-  echo "Subido a GitHub: $(git log --oneline -1)"
 fi
