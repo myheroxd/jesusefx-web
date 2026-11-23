@@ -51,7 +51,7 @@
     </header>
     <main id="contenido">
       <h1>Cómo despliego esta web sin entrar en ningún panel</h1>
-      <p class="meta">17 de noviembre de 2026 · 5 minutos</p>
+      <p class="meta">17 de noviembre de 2026 · 5 minutos · revisado el 23 de noviembre</p>
       <p class="entradilla">Esta web son ficheros estáticos servidos desde Cloudflare Workers. No hay panel de administración: publico desde la terminal, con un script y un token.</p>
 
       <h2>Por qué así</h2>
@@ -81,6 +81,7 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONA/purge_cache" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   --data '{"purge_everything":true}'</code></pre>
+      <p>El último paso, el de GitHub, ya no usa claves SSH. Desde el 23 de noviembre la autenticación la resuelve <code>gh</code>, que deja a git configurado solo para <code>github.com</code>: el token no se envía a ningún otro servidor y no hay claves que copiar entre equipos.</p>
 
       <h2>Los errores que me costaron tiempo</h2>
       <ul>
