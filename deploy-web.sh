@@ -14,18 +14,18 @@ FILES=(index.html 404.html cv.html cv.pdf cv-en.pdf privacidad.html aviso-legal.
        apple-touch-icon.png site.webmanifest)
 
 echo "== 1/5 Comprobando credenciales"
+# Credenciales: token (si sirve) o sesión de Wrangler (npx wrangler login).
+# El token es opcional a propósito: si le faltan permisos de Workers, se usa OAuth.
 TOKEN_FILE="$HOME/.config/cloudflare/deploy-token"
-if [[ ! -f "$TOKEN_FILE" ]]; then
-  echo "ERROR: falta $TOKEN_FILE"
-  exit 1
+TOKEN=""
+if [[ -f "$TOKEN_FILE" ]] && curl -s -H "Authorization: Bearer $(<"$TOKEN_FILE")" \
+     https://api.cloudflare.com/client/v4/user/tokens/verify | grep -q '"status":"active"'; then
+  TOKEN="$(<"$TOKEN_FILE")"
+  echo "   Token válido ($TOKEN_FILE)"
+else
+  echo "   Sin token utilizable: se desplegará con la sesión de Wrangler"
+  echo "   (si falla: npx wrangler login)"
 fi
-TOKEN="$(<"$TOKEN_FILE")"
-if ! curl -s -H "Authorization: Bearer $TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify \
-     | grep -q '"status":"active"'; then
-  echo "ERROR: el token de despliegue no es válido o ha caducado."
-  exit 1
-fi
-echo "   Token válido"
 
 echo "== 2/5 Preparando el paquete de despliegue"
 rm -rf "$BUILD"
@@ -53,8 +53,33 @@ JSON
 
 echo "== 3/5 Desplegando en Cloudflare"
 cd "$BUILD"
-CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" \
-  npx -y wrangler@4.164.0 deploy
+desplegar_con_token() {
+  CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" \
+    npx -y wrangler@4.164.0 deploy
+}
+desplegar_con_oauth() {
+  CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" npx -y wrangler@4.164.0 deploy
+}
+
+MODO="oauth"
+if [[ -n "$TOKEN" ]]; then
+  if desplegar_con_token; then
+    MODO="token"
+  else
+    echo
+    echo "   El token no puede desplegar (le faltarán permisos de Workers)."
+    echo "   Reintento con la sesión de Wrangler…"
+  fi
+fi
+if [[ "$MODO" != "token" ]]; then
+  if ! desplegar_con_oauth; then
+    echo "ERROR: no se pudo desplegar ni con token ni con OAuth."
+    echo "       Ejecuta: npx -y wrangler@4.164.0 login"
+    exit 1
+  fi
+  MODO="oauth"
+fi
+echo "   Desplegado con $MODO"
 
 echo "   Purgando la caché del dominio"
 curl -s -o /dev/null -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/purge_cache" \
