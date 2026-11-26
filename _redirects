@@ -1,0 +1,11 @@
+# Redirecciones permanentes: las URL con .html y las de barra final
+# apuntan a su versión canónica. Cloudflare las servía como 307
+# temporales; aquí se declaran 301 para que Google consolide las señales.
+/index.html / 301
+/cv.html /cv 301
+/privacidad.html /privacidad 301
+/aviso-legal.html /aviso-legal 301
+/notas/index.html /notas/ 301
+/notas/tunel-cloudflare-ssh.html /notas/tunel-cloudflare-ssh 301
+/notas/desplegar-web-sin-panel.html /notas/desplegar-web-sin-panel 301
+/notas /notas/ 301

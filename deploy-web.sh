@@ -9,8 +9,8 @@ ACCOUNT_ID="0e1ecd6fae57c76cdd054e50f2d810b7"
 ZONE_ID="f24bb7bbe6b7b81da2f7d337b2281ea0"
 
 FILES=(index.html 404.html cv.html cv.pdf cv-en.pdf privacidad.html aviso-legal.html
-       robots.txt sitemap.xml estilo.css
-       favicon.svg favicon-32.png favicon-192.png favicon-512.png
+       robots.txt sitemap.xml estilo.css _redirects
+       favicon.svg favicon.ico favicon-32.png favicon-192.png favicon-512.png
        apple-touch-icon.png site.webmanifest)
 
 echo "== 1/5 Comprobando credenciales"

@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /mensajes
+Disallow: /contact
 
 Sitemap: https://jesusefx.es/sitemap.xml
